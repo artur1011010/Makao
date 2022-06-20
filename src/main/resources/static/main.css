@@ -1,0 +1,29 @@
+.html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+h1 {
+    text-align: center;
+}
+
+.main-wrapper {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 800px;
+}
+
+.card{
+    border: 2px solid black;
+    border-radius: 7px;
+    height: 145px;
+    width: 112px;
+    background-size: cover;
+    cursor: pointer;
+    float: left;
+}
+
+#on-hand{
+    float: left;
+}
