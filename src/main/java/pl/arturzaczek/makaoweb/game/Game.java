@@ -63,9 +63,21 @@ public class Game {
         }
     }
 
-    public void firstDeal() {
+    private void firstDeal() {
         playerList.forEach(player -> player.setOnHand(cardDeck.getNextCard(5)));
         cardDeck.putFirstCardAway();
+        setFirstPlayerActive();
+    }
+
+    private void setFirstPlayerActive() {
+        playerList.get(0).setState(Player.State.ACTIVE);
+    }
+
+    private int nextPlayerIndex(int currentPlayerIndex) {
+        if (currentPlayerIndex < playerList.size() - 1) {
+            return ++currentPlayerIndex;
+        } else
+            return 0;
     }
 
 

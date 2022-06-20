@@ -5,12 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import pl.arturzaczek.makaoweb.game.Game;
-import pl.arturzaczek.makaoweb.game.cards.CardDeck;
 import pl.arturzaczek.makaoweb.game.exception.PlayerException;
 import pl.arturzaczek.makaoweb.game.player.Player;
 import pl.arturzaczek.makaoweb.rest.dto.GameStateDto;
 import pl.arturzaczek.makaoweb.rest.dto.PlayerDto;
-import pl.arturzaczek.makaoweb.rest.dto.PlayerStateDto;
 import pl.arturzaczek.makaoweb.utils.CardResolver;
 
 import java.util.ArrayList;
@@ -37,27 +35,40 @@ public class GameService {
         return Pair.of("uuid", stringUuid);
     }
 
-    public PlayerStateDto getPlayerState(final String uuid) {
+    public PlayerDto getPlayerState(final String uuid) {
         log.info("uuid: {}", uuid);
-        final Player player = game.getPlayerList().stream()
-                .filter(player1 -> player1.getUuid().equals(uuid))
-                .findFirst()
-                .orElseThrow(() -> new PlayerException("user with uuid: " + uuid + " not found"));
-        return PlayerStateDto.builder()
-                .playerName(player.getName())
-                .playerState(player.getState() == null ? "null state" : player.getState().name())
-                .cardOnHand(player.getOnHand()
+        final Player player = getPlayerByUuid(uuid);
+//        return PlayerStateDto.builder()
+//                .playerName(player.getName())
+//                .playerState(player.getState() == null ? "null state" : player.getState().name())
+//                .cardOnHand(player.getOnHand()
+//                        .stream()
+//                        .map(cardResolver::getCardDto)
+//                        .collect(Collectors.toList()))
+//                .build();
+        return PlayerDto.builder()
+                .state(player.getState() == null ? Player.State.IDLE : player.getState())
+                .movementsBlocked(player.getMovementsBlocked())
+                .onHand(player.getOnHand()
                         .stream()
                         .map(cardResolver::getCardDto)
                         .collect(Collectors.toList()))
+                .name(player.getName())
                 .build();
     }
 
-    public void startGame() {
-      game.startGame();
+    private Player getPlayerByUuid(final String uuid) {
+        return game.getPlayerList().stream()
+                .filter(player1 -> player1.getUuid().equals(uuid))
+                .findFirst()
+                .orElseThrow(() -> new PlayerException("user with uuid: " + uuid + " not found"));
     }
 
-    public void restartGame(){
+    public void startGame() {
+        game.startGame();
+    }
+
+    public void restartGame() {
         game.restartGame();
     }
 
@@ -67,7 +78,10 @@ public class GameService {
                 .playerList(game.getPlayerList().stream().map(player -> PlayerDto.builder()
                         .state(player.getState())
                         .movementsBlocked(player.getMovementsBlocked())
-                        .onHand(player.getOnHand())
+                        .onHand(player.getOnHand()
+                                .stream()
+                                .map(cardResolver::getCardDto)
+                                .collect(Collectors.toList()))
                         .name(player.getName())
                         .build()).collect(Collectors.toList()))
                 .lastOnStack(cardResolver.getCardDto(game.getCardDeck().getLastOnStack()))

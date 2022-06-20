@@ -1,3 +1,32 @@
+let gameState = {
+    playerList: [],
+    lastOnStack: null,
+    gameState: 'OPEN',
+    active: null
+}
+
+let playerState = {
+    name: '',
+    onHand: [],
+    state: 'IDLE',
+    movementsBlocked: 0,
+    uuid: ''
+}
+
+let putAside = [];
+
+class GameState {
+    constructor(obj) {
+        obj && Object.assign(this, obj);
+    }
+}
+
+class PlayerState {
+    constructor(obj) {
+        obj && Object.assign(this, obj);
+    }
+}
+
 class Card {
     constructor(color, value, obj) {
         if (obj !== undefined) {
@@ -12,8 +41,27 @@ class Card {
         return `<div class="card ${this.color + this.value}" ${this.getImage(this.color, this.value)}></div>`;
     }
 
+    getOnHandCard() {
+        return `<div class="card action-card ${this.color + this.value}" ${this.getImage(this.color, this.value)} 
+            onClick='cardAction("${this.color}" , "${this.value}")' data-bs-toggle="tooltip" data-bs-placement="top" title="połóż kartę"></div>`;
+    }
+
+    getPutAsideCard() {
+        return `<div class="card ${this.color + this.value}" ${this.getImage(this.color, this.value)} data-bs-toggle="tooltip" data-bs-placement="top" title="możesz cofnąc wybór przyciskiem"></div>`;
+    }
+
     getImage(color, value) {
         return `style='background-image: url("./img/cards/${color.toLowerCase()}-${value.toLowerCase()}.png");'`;
+    }
+
+    equals(object2) {
+        return this.color === object2.color && this.value === object2.value;
+    }
+}
+
+class Move {
+    constructor(putAside) {
+        this.putAside = putAside;
     }
 }
 
@@ -62,8 +110,8 @@ const getPlayerState = () => {
 
     getData('/api/player/state')
         .then(data => {
-            console.log(data)
-            populateCardsOnHand(data)
+            playerState = new GameState(data)
+            populateCardsOnHand()
         });
 }
 
@@ -80,7 +128,9 @@ const getGameState = () => {
     getData('/api/game/state')
         .then(data => {
             console.log(data)
-            updateGameState(data);
+            gameState = new GameState(data)
+            // updateGameState(new GameState(data));
+            updateGameState();
         });
 }
 
@@ -118,11 +168,11 @@ const restartGame = () => {
         });
 }
 
-const updateGameState = (gameStateIn) => {
+const updateGameState = () => {
     const stateText = document.getElementById("game-state")
-    stateText.innerHTML = gameStateIn.gameState;
-    if (gameStateIn.gameState === "PLAYING") {
-        populateLastCardOnStack(gameStateIn.lastOnStack);
+    stateText.innerHTML = gameState.gameState;
+    if (gameState.gameState === "PLAYING") {
+        populateLastCardOnStack(gameState.lastOnStack);
     }
     getPlayerState();
 }
@@ -130,20 +180,53 @@ const updateGameState = (gameStateIn) => {
 
 const populateLastCardOnStack = (card) => {
     const domObj = document.getElementById("last-on-stack")
-    const cardd = new Card("1", "2", card)
+    const cardd = new Card(undefined, undefined, card)
     console.log(cardd)
     domObj.innerHTML = cardd.getCardHtml();
 }
 
-const populateCardsOnHand = (data) => {
-    const onHand = document.getElementById("on-hand")
-    const cards = data.cardOnHand;
+const populateCardsOnHand = () => {
+    const onHand1 = document.getElementById("on-hand")
+    const cards = playerState.onHand;
     let result = '';
     if (cards !== undefined && cards.length > 0) {
         cards.forEach(card => {
-            const cardd = new Card("1", "2", card)
-            result += cardd.getCardHtml();
+            const cardd = new Card(undefined, undefined, card)
+            result += cardd.getOnHandCard();
         })
-        onHand.innerHTML = result;
+        onHand1.innerHTML = result;
     }
+}
+
+const cardAction = (color, value) => {
+    putAside.push(new Card(color, value));
+    renderPutAside();
+}
+
+const renderPutAside = () => {
+    const putAsideDom = document.getElementById("put-aside")
+    const putAsideHeaderDom = document.getElementById("put-aside-header")
+    let result = '';
+    if (putAside !== undefined && putAside.length > 0) {
+        putAsideDom.style.display = 'block';
+        putAsideHeaderDom.style.display = 'block';
+        putAside.forEach(card => {
+            const cardd = new Card(undefined, undefined, card)
+            result += cardd.getPutAsideCard();
+        })
+        putAsideDom.innerHTML = result;
+    } else {
+        putAsideDom.style.display = 'none';
+        putAsideHeaderDom.style.display = 'none';
+    }
+}
+
+const checkIfPutAsideIsPossible = (card) => {
+
+}
+
+setInterval('refreshGame()', 1000)
+
+function refreshGame() {
+    // console.log(Date.now())
 }

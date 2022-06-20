@@ -2,6 +2,7 @@ package pl.arturzaczek.makaoweb.game.cards;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import pl.arturzaczek.makaoweb.game.exception.CardDeckException;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Getter
 @Setter
+@Slf4j
 public class CardDeck {
 
     private static final List<String> values = List.of("2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace");
@@ -56,8 +58,16 @@ public class CardDeck {
     }
 
     public void putCardAway(final BaseCard card) {
-        afterDeal.add(lastOnStack);
-        lastOnStack = card;
+        final String lastOnStackClass = lastOnStack.getClass().getSimpleName();
+        if(lastOnStackClass.equals(card.getClass().getSimpleName())){
+            afterDeal.add(lastOnStack);
+            lastOnStack = card;
+        }else if(lastOnStack.getValue().equals(card.getValue())){
+            afterDeal.add(lastOnStack);
+            lastOnStack = card;
+        }else {
+            log.error("karta nie moze zostać odłozona");
+        }
     }
 
     public void putFirstCardAway(){

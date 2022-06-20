@@ -18,6 +18,7 @@ public class Player {
     private List<BaseCard> onHand = new ArrayList<>();
     private State state = State.IDLE;
     private int movementsBlocked;
+    private int cardsToTake;
     private String uuid;
 
 
