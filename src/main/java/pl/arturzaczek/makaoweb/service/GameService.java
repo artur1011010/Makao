@@ -38,14 +38,6 @@ public class GameService {
     public PlayerDto getPlayerState(final String uuid) {
         log.info("uuid: {}", uuid);
         final Player player = getPlayerByUuid(uuid);
-//        return PlayerStateDto.builder()
-//                .playerName(player.getName())
-//                .playerState(player.getState() == null ? "null state" : player.getState().name())
-//                .cardOnHand(player.getOnHand()
-//                        .stream()
-//                        .map(cardResolver::getCardDto)
-//                        .collect(Collectors.toList()))
-//                .build();
         return PlayerDto.builder()
                 .state(player.getState() == null ? Player.State.IDLE : player.getState())
                 .movementsBlocked(player.getMovementsBlocked())

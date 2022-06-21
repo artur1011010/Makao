@@ -18,20 +18,26 @@
         <label for="player-name" class="form-label">Imie gracza</label>
         <input type="text" class="form-control" id="player-name">
     </div>
-    <button type="button" onclick="createPlayer()" class="btn btn-outline-dark">Ustaw nazwe gracza i dolacz do gry</button>
+    <button type="button" onclick="createPlayer()" class="btn btn-outline-dark">Ustaw nazwe gracza i dolacz do gry
+    </button>
     <button type="button" onclick="getGameState()" class="btn btn-outline-dark">Pokaż stan gry</button>
     <button type="button" onclick="getPlayerState()" class="btn btn-outline-dark">Pokaż stan gracza</button>
     <button type="button" onclick="startGame()" class="btn btn-outline-dark">Rozpocznij grę</button>
     <button type="button" onclick="restartGame()" class="btn btn-outline-dark">Rozpocznij grę od nowa</button>
-    <hr>
+    <hr class="clear">
     <div id="game-state"></div>
-    <hr>
+    <hr class="clear">
     <h4>karta na stole:</h4>
     <div id="last-on-stack"></div>
-    <hr>
-    <h4 id="put-aside-header">karty do położenia na stole:</h4>
-    <div id="put-aside"></div>
-    <hr>
+    <hr class="clear">
+    <div id="put-aside-wrapper">
+        <h4 id="put-aside-header">karty do położenia na stole:</h4>
+        <div id="put-aside"></div>
+        <button type="button" onclick="move()" class="btn btn-outline-dark clear">wykonaj ruch</button>
+        <button type="button" onclick="putCardsBackToHand()" class="btn btn-outline-dark">Anuluj - weź karty w dłoń
+        </button>
+    </div>
+    <hr class="clear">
     <h4>karty w dłoni:</h4>
     <div id="on-hand"></div>
 </div>

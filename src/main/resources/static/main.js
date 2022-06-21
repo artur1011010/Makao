@@ -111,7 +111,7 @@ const getPlayerState = () => {
     getData('/api/player/state')
         .then(data => {
             playerState = new GameState(data)
-            populateCardsOnHand()
+            renderCardsOnHand()
         });
 }
 
@@ -146,7 +146,7 @@ const startGame = () => {
 
     getData('/api/game/start')
         .then(() => {
-            console.log("rozpoczynanie gry...")
+            console.log("starting game...")
             getGameState();
         });
 }
@@ -163,7 +163,7 @@ const restartGame = () => {
 
     getData('/api/game/restart')
         .then(() => {
-            console.log("rozpoczynanie gry od nowa...")
+            console.log("starting game...")
             getGameState();
         });
 }
@@ -185,31 +185,52 @@ const populateLastCardOnStack = (card) => {
     domObj.innerHTML = cardd.getCardHtml();
 }
 
-const populateCardsOnHand = () => {
+const renderCardsOnHand = () => {
     const onHand1 = document.getElementById("on-hand")
-    const cards = playerState.onHand;
     let result = '';
-    if (cards !== undefined && cards.length > 0) {
-        cards.forEach(card => {
-            const cardd = new Card(undefined, undefined, card)
-            result += cardd.getOnHandCard();
+    playerState.onHand = playerState.onHand.map(card => new Card(undefined, undefined, card));
+    if (playerState.onHand !== undefined && playerState.onHand.length > 0) {
+        playerState.onHand.forEach(card => {
+            result += card.getOnHandCard();
         })
         onHand1.innerHTML = result;
     }
 }
 
 const cardAction = (color, value) => {
-    putAside.push(new Card(color, value));
+    const card = new Card(color, value);
+    const indexToRemove = getCardIndexFromCardsOnHand(card)
+    if (indexToRemove < 0) {
+        console.log("card index not found")
+        return;
+    }
+    if(!checkIfPutAsideIsPossible(card)){
+        console.log("nie mozesz polozyc tej karty")
+        return;
+    }
+    putAside.push(card);
+    playerState.onHand.splice(getCardIndexFromCardsOnHand(card), 1);
+    renderCardsOnHand();
     renderPutAside();
 }
 
+const getCardIndexFromCardsOnHand = (card) => {
+    for (let i = 0; i < playerState.onHand.length; i++) {
+        if (playerState.onHand[i].equals(card)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+
 const renderPutAside = () => {
     const putAsideDom = document.getElementById("put-aside")
-    const putAsideHeaderDom = document.getElementById("put-aside-header")
+    const putAsideWrapperDom = document.getElementById("put-aside-wrapper")
     let result = '';
     if (putAside !== undefined && putAside.length > 0) {
         putAsideDom.style.display = 'block';
-        putAsideHeaderDom.style.display = 'block';
+        putAsideWrapperDom.style.display = 'block';
         putAside.forEach(card => {
             const cardd = new Card(undefined, undefined, card)
             result += cardd.getPutAsideCard();
@@ -217,12 +238,51 @@ const renderPutAside = () => {
         putAsideDom.innerHTML = result;
     } else {
         putAsideDom.style.display = 'none';
-        putAsideHeaderDom.style.display = 'none';
+        putAsideWrapperDom.style.display = 'none';
     }
 }
 
-const checkIfPutAsideIsPossible = (card) => {
+const move = () => {
+    console.log("wykonanie ruchy")
+}
 
+const putCardsBackToHand = () => {
+    console.log('putCardsBackToHand')
+    playerState.onHand.push(...putAside);
+    putAside = [];
+    renderCardsOnHand();
+    renderPutAside();
+}
+
+const checkIfPutAsideIsPossible = (card) => {
+    if (putAside.length > 0) {
+        const lastCard = putAside[putAside.length - 1];
+        return cardResolver(lastCard, card, true);
+    } else {
+        const lastCard = gameState.lastOnStack;
+        return cardResolver(lastCard, card, false);
+    }
+}
+
+const cardResolver = (stack, newCard, next) => {
+    if (next === true) {
+        if (stack.value === newCard.value) {
+            console.log('wartosc sie zgadza');
+            return true;
+        } else if (newCard.value === 'Queen') {
+            console.log('dama na wszystko, wszystko na damę');
+            return true;
+        }
+    } else {
+        if (stack.color === newCard.color || stack.value === newCard.value) {
+            console.log('kolor lub wartosc sie zgadza');
+            return true;
+        } else if (newCard.value === 'Queen') {
+            console.log('dama na wszystko, wszystko na damę');
+            return true;
+        }
+    }
+    return false;
 }
 
 setInterval('refreshGame()', 1000)
