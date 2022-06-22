@@ -3,7 +3,7 @@ package pl.arturzaczek.makaoweb.game.player;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import pl.arturzaczek.makaoweb.game.cards.BaseCard;
-import pl.arturzaczek.makaoweb.rest.dto.CardDto;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +41,7 @@ public class Player {
     public void removeCardsFromHand(List<BaseCard> cardsToRemove) {
         cardsToRemove.forEach(card -> onHand.remove(card));
     }
-    //todo do przetestowania
+
     public boolean has2OnHand() {
         return onHand.stream()
                 .anyMatch(card -> card.getValue().equals(BaseCard.VALUE_2));

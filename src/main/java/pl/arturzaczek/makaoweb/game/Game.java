@@ -43,13 +43,15 @@ public class Game {
         }
         cardDeck = new CardDeck();
         gameState = GameState.PLAYING;
-        playerList.forEach(player -> player.setOnHand(new ArrayList<>()));
+        playerList.forEach(player -> {
+            player.setOnHand(new ArrayList<>());
+            player.setState(Player.State.WAITING);
+        });
         firstDeal();
     }
 
-    //create new player
     public boolean playerJoin(final Player player) {
-        log.error("{}", player.getUuid());
+        log.info("Player {} with uuid: {} join", player.getName(), player.getUuid());
         if (playerList.size() < 4 && gameState == GameState.OPEN && player.getState() == Player.State.IDLE) {
             playerList.add(player);
             player.setState(Player.State.WAITING);
@@ -68,18 +70,30 @@ public class Game {
                 .orElseThrow(() -> new PlayerException("user with uuid: " + uuid + " not found"));
     }
 
-    public Player getPrevPlayerForUuid(final String uuid) {
-        return playerList.stream()
-                .filter(player1 -> player1.getUuid().equals(uuid))
-                .findFirst()
-                .orElseThrow(() -> new PlayerException("user with uuid: " + uuid + " not found"));
+    public Player getPrevPlayerByCurrentUuid(final String uuid) {
+        final Player current = getPlayerByUuid(uuid);
+        final int currentPosition = playerList.indexOf(current);
+        if (currentPosition < 0) {
+            log.error("can not find current player position");
+            return new Player();
+        }
+        if (currentPosition == 0) {
+            return playerList.get(playerList.size() - 1);
+        }
+        return playerList.get(currentPosition - 1);
     }
 
-    public Player getNextPlayerForUuid(final String uuid) {
-        return playerList.stream()
-                .filter(player1 -> player1.getUuid().equals(uuid))
-                .findFirst()
-                .orElseThrow(() -> new PlayerException("user with uuid: " + uuid + " not found"));
+    public Player getNextPlayerByCurrentUuid(final String uuid) {
+        final Player current = getPlayerByUuid(uuid);
+        final int currentPosition = playerList.indexOf(current);
+        if (currentPosition < 0) {
+            log.error("can not find current player position");
+            return new Player();
+        }
+        if (currentPosition > 0 && playerList.size() - 1 == currentPosition) {
+            return playerList.get(0);
+        }
+        return playerList.get(currentPosition + 1);
     }
 
     private void firstDeal() {
@@ -93,7 +107,7 @@ public class Game {
     }
 
 
-    private String nextPlayerUuid(Player player) {
+    private String getNextPlayerUuidByCurrentPlayer(Player player) {
         final int currentPosition = playerList.indexOf(player);
         if (currentPosition < 0) {
             log.error("can not find current player position");
@@ -106,7 +120,7 @@ public class Game {
     }
 
 
-    private String prevPlayerByUuid(Player player) {
+    private String getPervPlayerUuidByCurrentPlayer(Player player) {
         final int currentPosition = playerList.indexOf(player);
         if (currentPosition < 0) {
             log.error("can not find current player position");

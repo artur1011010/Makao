@@ -110,7 +110,7 @@ public class GameServiceImpl implements GameService {
 
 
     private void actionCard2(final Player player) {
-        final Player nextPlayer = game.getNextPlayerForUuid(player.getUuid());
+        final Player nextPlayer = game.getNextPlayerByCurrentUuid(player.getUuid());
         if (nextPlayer.has2OnHand()) {
             nextPlayer.setRequestedCardsInNextMove(CardHelper.ALL2.getCards());
         } else {
@@ -119,14 +119,14 @@ public class GameServiceImpl implements GameService {
     }
 
     private void actionCard3(final Player player) {
-        final Player nextPlayer = game.getNextPlayerForUuid(player.getUuid());
+        final Player nextPlayer = game.getNextPlayerByCurrentUuid(player.getUuid());
         if (nextPlayer.has3OnHand()) {
             nextPlayer.setRequestedCardsInNextMove(CardHelper.ALL3.getCards());
         }
     }
 
     private void actionCard4(final Player player) {
-        final Player nextPlayer = game.getNextPlayerForUuid(player.getUuid());
+        final Player nextPlayer = game.getNextPlayerByCurrentUuid(player.getUuid());
         if (nextPlayer.has4OnHand()) {
             nextPlayer.setRequestedCardsInNextMove(CardHelper.ALL4.getCards());
         }
