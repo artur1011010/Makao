@@ -1,7 +1,9 @@
 package pl.arturzaczek.makaoweb.game.player;
 
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 import pl.arturzaczek.makaoweb.game.cards.BaseCard;
+import pl.arturzaczek.makaoweb.rest.dto.CardDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,11 +15,13 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Slf4j
 public class Player {
     private String name;
     private List<BaseCard> onHand = new ArrayList<>();
     private State state = State.IDLE;
     private int movementsBlocked;
+    private List<BaseCard> requestedCardsInNextMove = new ArrayList<>();
     private int cardsToTake;
     private String uuid;
 
@@ -34,9 +38,28 @@ public class Player {
         return Objects.hash(uuid);
     }
 
+    public void removeCardsFromHand(List<BaseCard> cardsToRemove) {
+        cardsToRemove.forEach(card -> onHand.remove(card));
+    }
+    //todo do przetestowania
+    public boolean has2OnHand() {
+        return onHand.stream()
+                .anyMatch(card -> card.getValue().equals(BaseCard.VALUE_2));
+    }
+
+    public boolean has3OnHand() {
+        return onHand.stream()
+                .anyMatch(card -> card.getValue().equals(BaseCard.VALUE_3));
+    }
+
+    public boolean has4OnHand() {
+        return onHand.stream()
+                .anyMatch(card -> card.getValue().equals(BaseCard.VALUE_4));
+    }
+
     @AllArgsConstructor
     @Getter
-    public enum State{
+    public enum State {
         IDLE("bezczynny - nie uczestniczy w grze"),
         ACTIVE("wykonuje ruch"),
         BLOCKED("zablokowany na ilosc ruchow"),

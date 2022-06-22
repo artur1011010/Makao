@@ -20,7 +20,6 @@ public class CardDeck {
     private final List<BaseCard> afterDeal = new ArrayList<>();
     private BaseCard lastOnStack;
 
-
     public CardDeck() {
         populateCardDeck();
         shuffle();

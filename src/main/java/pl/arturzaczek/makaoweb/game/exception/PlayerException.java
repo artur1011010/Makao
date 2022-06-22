@@ -1,14 +1,11 @@
 package pl.arturzaczek.makaoweb.game.exception;
 
-public class PlayerException extends RuntimeException {
-    private String details;
-
-    public PlayerException(String message, String details) {
+public class PlayerException extends BaseGameException{
+    public PlayerException(String message) {
         super(message);
-        this.details = details;
     }
 
-    public PlayerException(String details) {
-        this.details = details;
+    public PlayerException(String message, String details) {
+        super(message, details);
     }
 }

@@ -2,7 +2,7 @@ let gameState = {
     playerList: [],
     lastOnStack: null,
     gameState: 'OPEN',
-    active: null
+    activePlayer: null
 }
 
 let playerState = {
@@ -18,6 +18,25 @@ let putAside = [];
 class GameState {
     constructor(obj) {
         obj && Object.assign(this, obj);
+    }
+    renderGameState() {
+        let result = `<p><span class="badge rounded-pill bg-secondary">w trakcie rozgrywki</span>`
+        if (this.gameState === 'OPEN') {
+            result = `<p><span class="badge rounded-pill bg-success">otwarta, można dołączyć</span></p>`
+        } else if (this.gameState === 'FINISHED') {
+            result = `<p><span class="badge rounded-pill bg-success">zakończona, czeka na ponowne uruchomienie</span></p>`
+        }
+        result += this.renderPlayersList()
+        return result;
+    }
+
+    renderPlayersList() {
+        let result = '<ol class="list-group list-group-numbered">';
+        this.playerList.forEach(player => {
+            result += `<li class="list-group-item d-flex justify-content-between align-items-start"><div class="ms-2 me-auto"><div class="fw-bold">Gracz: ${player.name}</div>Status: ${player.state}</div></div>`
+            result += ` <span class="badge bg-primary rounded-pill">karty: ${player.onHand.length}</span>`
+        })
+        return result;
     }
 }
 
@@ -148,6 +167,7 @@ const startGame = () => {
         .then(() => {
             console.log("starting game...")
             getGameState();
+            getPlayerState();
         });
 }
 
@@ -170,13 +190,11 @@ const restartGame = () => {
 
 const updateGameState = () => {
     const stateText = document.getElementById("game-state")
-    stateText.innerHTML = gameState.gameState;
+    stateText.innerHTML = gameState.renderGameState()
     if (gameState.gameState === "PLAYING") {
         populateLastCardOnStack(gameState.lastOnStack);
     }
-    getPlayerState();
 }
-
 
 const populateLastCardOnStack = (card) => {
     const domObj = document.getElementById("last-on-stack")
@@ -204,7 +222,7 @@ const cardAction = (color, value) => {
         console.log("card index not found")
         return;
     }
-    if(!checkIfPutAsideIsPossible(card)){
+    if (!checkIfPutAsideIsPossible(card)) {
         console.log("nie mozesz polozyc tej karty")
         return;
     }
@@ -243,7 +261,31 @@ const renderPutAside = () => {
 }
 
 const move = () => {
-    console.log("wykonanie ruchy")
+    const moveDto = new Move(putAside);
+    putAside = [];
+
+    async function postData(url) {
+        await fetch(url, {
+            method: "POST",
+            body: JSON.stringify(moveDto),
+            headers: {
+                'Content-Type': 'application/json',
+                'uuid': getUserUuid()
+            }
+        });
+    }
+
+    postData('/api/game/move')
+        .then(() => {
+            console.log('user made move')
+            updateGameState();
+            getPlayerState();
+            renderCardsOnHand();
+            renderPutAside();
+        })
+        .catch(error => {
+            console.error('There was an error!', error);
+        });
 }
 
 const putCardsBackToHand = () => {
@@ -288,5 +330,5 @@ const cardResolver = (stack, newCard, next) => {
 setInterval('refreshGame()', 1000)
 
 function refreshGame() {
-    // console.log(Date.now())
+    getGameState();
 }

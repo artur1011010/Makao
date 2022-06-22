@@ -53,6 +53,7 @@ public class GameController {
     @PostMapping("/game/move")
     public ResponseEntity<Void> move(@RequestHeader final String uuid, @RequestBody final MoveDto moveDto) {
         log.info("POST  api/game/move");
+        service.move(uuid, moveDto);
         return ResponseEntity.ok().build();
     }
 }

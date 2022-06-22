@@ -1,14 +1,11 @@
 package pl.arturzaczek.makaoweb.game.exception;
 
-public class CardDeckException extends RuntimeException{
-    private String details;
-
-    public CardDeckException(String message, String details) {
+public class CardDeckException extends BaseGameException{
+    public CardDeckException(String message) {
         super(message);
-        this.details = details;
     }
 
-    public CardDeckException(String details) {
-        this.details = details;
+    public CardDeckException(String message, String details) {
+        super(message, details);
     }
 }

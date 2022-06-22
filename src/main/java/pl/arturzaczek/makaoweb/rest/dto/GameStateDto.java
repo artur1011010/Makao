@@ -16,5 +16,5 @@ public class GameStateDto {
     private List<PlayerDto> playerList;
     private CardDto lastOnStack;
     private String gameState;
-    private Player active;
+    private Player activePlayer;
 }
