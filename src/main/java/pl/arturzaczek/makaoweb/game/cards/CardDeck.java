@@ -4,17 +4,20 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import pl.arturzaczek.makaoweb.game.exception.CardDeckException;
+import pl.arturzaczek.makaoweb.utils.CardValues;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @Slf4j
 public class CardDeck {
 
-    private static final List<String> values = List.of("2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace");
+    private static final List<String> values = Arrays.stream(CardValues.values()).map(CardValues::getValue).collect(Collectors.toList());
 
     private final List<BaseCard> deck = new ArrayList<>();
     private final List<BaseCard> afterDeal = new ArrayList<>();
