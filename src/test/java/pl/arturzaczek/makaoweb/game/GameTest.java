@@ -159,8 +159,19 @@ class GameTest {
         final Player player1 = game.getPlayerByUuid("test1");
         Assertions.assertDoesNotThrow(
                 ()-> game.toggleNextPlayerActive(player1));
-
         final Player player2 = game.getPlayerByUuid("test2");
+        Assertions.assertEquals(Player.State.ACTIVE, player2.getState());
+        Assertions.assertEquals(Player.State.WAITING, player1.getState());
+    }
+
+
+    @Test
+    public void shouldToggleNextPlayerActive2() {
+        final Game game = mockGame(Game.GameState.OPEN);
+        final Player player1 = game.getPlayerByUuid("test3");
+        Assertions.assertDoesNotThrow(
+                ()-> game.toggleNextPlayerActive(player1));
+        final Player player2 = game.getPlayerByUuid("test1");
         Assertions.assertEquals(Player.State.ACTIVE, player2.getState());
         Assertions.assertEquals(Player.State.WAITING, player1.getState());
     }

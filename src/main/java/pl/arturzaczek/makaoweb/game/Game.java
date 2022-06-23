@@ -8,7 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import pl.arturzaczek.makaoweb.game.cards.CardDeck;
 import pl.arturzaczek.makaoweb.game.exception.GameException;
-import pl.arturzaczek.makaoweb.game.exception.PlayerException;
 import pl.arturzaczek.makaoweb.game.player.Player;
 
 import java.util.ArrayList;
@@ -67,7 +66,7 @@ public class Game {
         return playerList.stream()
                 .filter(player1 -> player1.getUuid().equals(uuid))
                 .findFirst()
-                .orElseThrow(() -> new PlayerException("user with uuid: " + uuid + " not found"));
+                .orElse(new Player());
     }
 
     public Player getPrevPlayerByCurrentUuid(final String uuid) {
@@ -131,7 +130,6 @@ public class Game {
     }
 
     public void toggleNextPlayerActive(final Player currentPlayer){
-        final int currentPosition = playerList.indexOf(currentPlayer);
         currentPlayer.setState(Player.State.WAITING);
         final Player nextPlayer = getNextPlayerByCurrentUuid(currentPlayer.getUuid());
         nextPlayer.setState(Player.State.ACTIVE);

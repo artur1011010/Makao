@@ -12,7 +12,6 @@ public class CardResolver {
 
     public CardDto getCardDto(final BaseCard baseCard) {
         if (baseCard == null) {
-            log.error("BaseCard is null");
             return null;
         }
         final String simpleName = baseCard.getClass().getSimpleName();
@@ -31,7 +30,6 @@ public class CardResolver {
 
     public BaseCard getBaseCard(final CardDto cardDto) {
         if (cardDto == null) {
-            log.error("BaseCard is null");
             return null;
         }
 

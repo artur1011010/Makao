@@ -195,11 +195,7 @@ const getGameState = () => {
             }
             gameState = newState;
             if(!newState.equals(gameState)){
-                if(newState.gameState === 'PLAYING'){
-                    triggerSuccessToast('Rozpoczęto grę');
-                }
                 gameState = newState;
-                getPlayerState();
             }
             updateGameState();
         })
@@ -309,8 +305,8 @@ const populateLastCardOnStack = (card) => {
 const renderCardsOnHand = () => {
     const onHand1 = document.getElementById("on-hand")
     let result = '';
-    playerState.onHand = playerState.onHand.map(card => new Card(undefined, undefined, card));
     if (playerState.onHand !== undefined && playerState.onHand.length > 0) {
+        playerState.onHand = playerState.onHand.map(card => new Card(undefined, undefined, card));
         playerState.onHand.forEach(card => {
             result += card.getOnHandCard();
         })
