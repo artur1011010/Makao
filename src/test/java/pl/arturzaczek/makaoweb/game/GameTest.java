@@ -176,6 +176,71 @@ class GameTest {
         Assertions.assertEquals(Player.State.WAITING, player1.getState());
     }
 
+    @Test
+    public void shouldReturnNextWaitingPlayer() {
+        final Player player1 = Player.builder()
+                .uuid("test1")
+                .state(Player.State.ACTIVE)
+                .build();
+
+        final Player player2 = Player.builder()
+                .uuid("test2")
+                .state(Player.State.BLOCKED)
+                .movementsBlocked(2)
+                .build();
+
+        final Player player3 = Player.builder()
+                .uuid("test3")
+                .state(Player.State.WAITING)
+                .build();
+
+        Game game = new Game();
+        game.setPlayerList(new ArrayList<>(List.of(player1, player2, player3)));
+        game.setGameState(Game.GameState.PLAYING);
+
+
+        final Player actual = Assertions.assertDoesNotThrow(
+                () -> game.getNextWaitingPlayerByCurrentUuid("test1"));
+        final Player expected = game.getPlayerByUuid("test3");
+        Assertions.assertEquals(expected, actual);
+        Assertions.assertEquals(1, player2.getMovementsBlocked());
+        Assertions.assertEquals(Player.State.BLOCKED, player2.getState());
+        Assertions.assertEquals(Player.State.WAITING, actual.getState());
+    }
+
+    @Test
+    public void shouldReturnNextWaitingPlayerWhenCurrentIsLast() {
+        final Player player1 = Player.builder()
+                .uuid("test1")
+                .state(Player.State.WAITING)
+                .build();
+
+        final Player player2 = Player.builder()
+                .uuid("test2")
+                .state(Player.State.ACTIVE)
+                .movementsBlocked(0)
+                .build();
+
+        final Player player3 = Player.builder()
+                .uuid("test3")
+                .state(Player.State.BLOCKED)
+                .movementsBlocked(1)
+                .build();
+
+        Game game = new Game();
+        game.setPlayerList(new ArrayList<>(List.of(player1, player2, player3)));
+        game.setGameState(Game.GameState.PLAYING);
+
+
+        final Player actual = Assertions.assertDoesNotThrow(
+                () -> game.getNextWaitingPlayerByCurrentUuid("test2"));
+        final Player expected = game.getPlayerByUuid("test1");
+        Assertions.assertEquals(expected, actual);
+        Assertions.assertEquals(0, player3.getMovementsBlocked());
+        Assertions.assertEquals(Player.State.WAITING, player3.getState());
+        Assertions.assertEquals(Player.State.WAITING, actual.getState());
+    }
+
     public Game mockGame(final Game.GameState state) {
         final Player player1 = Player.builder()
                 .name("player1")

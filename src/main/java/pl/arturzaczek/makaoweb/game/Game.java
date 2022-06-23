@@ -22,6 +22,8 @@ public class Game {
     private List<Player> playerList = new ArrayList<>();
     private CardDeck cardDeck = new CardDeck();
     private GameState gameState = GameState.OPEN;
+    //represent functional cards in row
+    private int functionalCards;
 
     public void startGame() {
         if (playerList.size() < 2) {
@@ -47,6 +49,15 @@ public class Game {
             player.setState(Player.State.WAITING);
         });
         firstDeal();
+    }
+
+    public void setGameStateFinishedAndClearTable(){
+        gameState = GameState.FINISHED;
+        cardDeck = new CardDeck();
+        playerList.forEach(player -> {
+            player.setOnHand(new ArrayList<>());
+            player.setState(Player.State.WAITING);
+        });
     }
 
     public boolean playerJoin(final Player player) {
@@ -95,6 +106,18 @@ public class Game {
         return playerList.get(currentPosition + 1);
     }
 
+    public Player getNextWaitingPlayerByCurrentUuid(final String uuid) {
+        Player next = getNextPlayerByCurrentUuid(uuid);
+        if (next.getMovementsBlockedAndDecrement() != 0) {
+            do {
+                next = getNextPlayerByCurrentUuid(next.getUuid());
+                next.getMovementsBlockedAndDecrement();
+            }while (next.getState() != Player.State.WAITING && next.getMovementsBlocked() != 0);
+        }
+        return next;
+    }
+
+
     private void firstDeal() {
         playerList.forEach(player -> player.setOnHand(cardDeck.getNextCard(5)));
         cardDeck.putFirstCardAway();
@@ -105,42 +128,49 @@ public class Game {
         playerList.get(0).setState(Player.State.ACTIVE);
     }
 
-    private String getNextPlayerUuidByCurrentPlayer(final Player player) {
-        final int currentPosition = playerList.indexOf(player);
-        if (currentPosition < 0) {
-            log.error("can not find current player position");
-            return StringUtils.EMPTY;
-        }
-        if (currentPosition > 0 && playerList.size() - 1 == currentPosition) {
-            return playerList.get(0).getUuid();
-        }
-        return playerList.get(currentPosition + 1).getUuid();
-    }
+//    private String getNextPlayerUuidByCurrentPlayer(final Player player) {
+//        final int currentPosition = playerList.indexOf(player);
+//        if (currentPosition < 0) {
+//            log.error("can not find current player position");
+//            return StringUtils.EMPTY;
+//        }
+//        if (currentPosition > 0 && playerList.size() - 1 == currentPosition) {
+//            return playerList.get(0).getUuid();
+//        }
+//        return playerList.get(currentPosition + 1).getUuid();
+//    }
+//
+//    private String getPervPlayerUuidByCurrentPlayer(final Player player) {
+//        final int currentPosition = playerList.indexOf(player);
+//        if (currentPosition < 0) {
+//            log.error("can not find current player position");
+//            return StringUtils.EMPTY;
+//        }
+//        if (currentPosition == 0) {
+//            return playerList.get(playerList.size() - 1).getUuid();
+//        }
+//        return playerList.get(currentPosition + 1).getUuid();
+//    }
 
-    private String getPervPlayerUuidByCurrentPlayer(final Player player) {
-        final int currentPosition = playerList.indexOf(player);
-        if (currentPosition < 0) {
-            log.error("can not find current player position");
-            return StringUtils.EMPTY;
-        }
-        if (currentPosition == 0) {
-            return playerList.get(playerList.size() - 1).getUuid();
-        }
-        return playerList.get(currentPosition + 1).getUuid();
-    }
-
-    public void toggleNextPlayerActive(final Player currentPlayer){
+    public void toggleNextPlayerActive(final Player currentPlayer) {
         currentPlayer.setState(Player.State.WAITING);
         final Player nextPlayer = getNextPlayerByCurrentUuid(currentPlayer.getUuid());
         nextPlayer.setState(Player.State.ACTIVE);
     }
 
-    public String getActivePlayerUuid(){
+    public String getActivePlayerUuid() {
         return playerList.stream()
                 .filter(player -> player.getState() == Player.State.ACTIVE)
                 .map(Player::getUuid)
                 .findFirst()
                 .orElse("no active player");
+    }
+
+    public Player getWinner(){
+        return playerList.stream()
+                .filter(player -> player.getOnHand().isEmpty() && player.getState() != Player.State.IDLE)
+                .findFirst()
+                .orElse(null);
     }
 
     @AllArgsConstructor

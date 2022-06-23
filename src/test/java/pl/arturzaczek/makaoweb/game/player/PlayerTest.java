@@ -85,4 +85,42 @@ class PlayerTest {
         Assertions.assertEquals(expected, player.getOnHand());
     }
 
+    @Test
+    public void shouldReturnAndDecrementMovements() {
+        final Player player = Player.builder()
+                .name("abc")
+                .uuid("test-123")
+                .onHand(CardHelper.NON_FUNCTIONAL_RANDOM4.getCards())
+                .movementsBlocked(3)
+                .build();
+
+        Assertions.assertEquals(3, player.getMovementsBlockedAndDecrement());
+        Assertions.assertEquals(2, player.getMovementsBlocked());
+    }
+
+    @Test
+    public void shouldReturnMovements() {
+        final Player player = Player.builder()
+                .name("abc")
+                .uuid("test-123")
+                .onHand(CardHelper.NON_FUNCTIONAL_RANDOM4.getCards())
+                .movementsBlocked(0)
+                .build();
+        Assertions.assertEquals(0, player.getMovementsBlockedAndDecrement());
+    }
+
+    @Test
+    public void shouldReturnMovementsBlockedAndUnlockPlayer() {
+        final Player player = Player.builder()
+                .name("abc")
+                .uuid("test-123")
+                .onHand(CardHelper.NON_FUNCTIONAL_RANDOM4.getCards())
+                .state(Player.State.BLOCKED)
+                .movementsBlocked(1)
+                .build();
+        Assertions.assertEquals(1, player.getMovementsBlockedAndDecrement());
+        Assertions.assertEquals(0, player.getMovementsBlocked());
+        Assertions.assertEquals(Player.State.WAITING, player.getState());
+    }
+
 }

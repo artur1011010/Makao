@@ -112,6 +112,7 @@ public class GameServiceImpl implements GameService {
             }
         }
         game.toggleNextPlayerActive(currentPlayer);
+        checkIfAnyPlayerWonAndRestartGame();
     }
 
     private boolean checkIfCardsAreFunctional(final List<BaseCard> baseCards) {
@@ -147,9 +148,16 @@ public class GameServiceImpl implements GameService {
         if (nextPlayer.has4OnHand()) {
             nextPlayer.setRequestedCardsInNextMove(CardHelper.ALL4.getCards());
         } else {
-            nextPlayer.getOnHand().add(game.getCardDeck().getNextCard());
             nextPlayer.setMovementsBlocked(functionalCardsOnStack);
             log.info("Player: {} got penalty, waiting {} rounds", nextPlayer.getName(), functionalCardsOnStack);
+        }
+    }
+
+    private void checkIfAnyPlayerWonAndRestartGame(){
+        Player winnerCandidate = game.getWinner();
+        if(winnerCandidate != null){
+            winnerCandidate.setState(Player.State.FINISHED);
+            game.setGameStateFinishedAndClearTable();
         }
     }
 }
