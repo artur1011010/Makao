@@ -1,24 +1,16 @@
-let gameState = {
-    playerList: [],
-    lastOnStack: null,
-    gameState: 'OPEN',
-    activePlayer: null
-}
-
-let playerState = {
-    name: '',
-    onHand: [],
-    state: 'IDLE',
-    movementsBlocked: 0,
-    uuid: ''
-}
-
-let putAside = [];
-
+//Classes
 class GameState {
-    constructor(obj) {
-        obj && Object.assign(this, obj);
+    constructor(obj, playerList, lastOnStack, gameState, activePlayerUuid) {
+        if (obj !== undefined) {
+            obj && Object.assign(this, obj);
+        } else {
+            this.playerList = playerList;
+            this.lastOnStack = lastOnStack;
+            this.gameState = gameState;
+            this.activePlayerUuid = activePlayerUuid;
+        }
     }
+
     renderGameState() {
         let result = `<p><span class="badge rounded-pill bg-secondary">w trakcie rozgrywki</span>`
         if (this.gameState === 'OPEN') {
@@ -33,16 +25,50 @@ class GameState {
     renderPlayersList() {
         let result = '<ol class="list-group list-group-numbered">';
         this.playerList.forEach(player => {
-            result += `<li class="list-group-item d-flex justify-content-between align-items-start"><div class="ms-2 me-auto"><div class="fw-bold">Gracz: ${player.name}</div>Status: ${player.state}</div></div>`
-            result += ` <span class="badge bg-primary rounded-pill">karty: ${player.onHand.length}</span>`
+            result += `<li class="list-group-item d-flex justify-content-between align-items-start">
+                        <div class="ms-2 me-auto">
+                        <div class="fw-bold">Gracz: ${player.name}</div>
+                        Status: ${this.getPolishDescFromState(player.state)}</div>
+                        </div> 
+                        <span class="badge bg-primary rounded-pill">karty: ${player.onHand.length === 1 ? "Makao! " + player.onHand.length : player.onHand.length}</span>`
         })
         return result;
+    }
+
+    getPolishDescFromState(state) {
+        let state1;
+        switch (state) {
+            case "ACTIVE":
+                state1 = "wykonuje ruch"
+                break;
+            case "BLOCKED":
+                state1 = "zablokowany w następnej kolejce"
+                break;
+            case "WAITING":
+                state1 = "czeka na swoją kolej"
+                break;
+            case "FINISHED":
+                state1 = "zakonczył gre"
+                break;
+            case "IDLE":
+                state1 = "bezczynny - nie uczestniczy w grze"
+                break;
+        }
+        return state1;
+    }
+
+    equals(object) {
+        return this.activePlayer === object.activePlayer;
     }
 }
 
 class PlayerState {
     constructor(obj) {
         obj && Object.assign(this, obj);
+    }
+
+    equals(object) {
+        return this.state === object.state;
     }
 }
 
@@ -84,6 +110,22 @@ class Move {
     }
 }
 
+//Global variables
+
+let gameState = new GameState(undefined, [], null, 'OPEN', null);
+
+let playerState = {
+    name: '',
+    onHand: [],
+    state: 'IDLE',
+    movementsBlocked: 0,
+    uuid: ''
+}
+
+let putAside = [];
+
+//FUNCTIONS
+
 const createPlayer = () => {
     const name = document.getElementById("player-name").value
     if (!name || name.length < 1) {
@@ -105,15 +147,11 @@ const createPlayer = () => {
         .then((data) => {
             console.log("uzytkownik stworzony i dodany do gry z uuid: " + data.uuid)
             setUserUuid(data.uuid);
+        })
+        .catch(error => {
+            console.error('There was an error!', error);
+            triggerErrorToast(error);
         });
-}
-
-const setUserUuid = (uuid) => {
-    localStorage.setItem("uuid", uuid);
-}
-
-const getUserUuid = () => {
-    return localStorage.getItem("uuid");
 }
 
 const getPlayerState = () => {
@@ -131,6 +169,10 @@ const getPlayerState = () => {
         .then(data => {
             playerState = new GameState(data)
             renderCardsOnHand()
+        })
+        .catch(error => {
+            console.error('There was an error!', error);
+            triggerErrorToast(error);
         });
 }
 
@@ -146,10 +188,24 @@ const getGameState = () => {
 
     getData('/api/game/state')
         .then(data => {
-            console.log(data)
-            gameState = new GameState(data)
-            // updateGameState(new GameState(data));
+            const newState = new GameState(data)
+            if(newState.activePlayerUuid !== gameState.activePlayerUuid){
+                console.log("status gry sie zmienił")
+                getPlayerState();
+            }
+            gameState = newState;
+            if(!newState.equals(gameState)){
+                if(newState.gameState === 'PLAYING'){
+                    triggerSuccessToast('Rozpoczęto grę');
+                }
+                gameState = newState;
+                getPlayerState();
+            }
             updateGameState();
+        })
+        .catch(error => {
+            console.error('There was an error!', error);
+            triggerErrorToast(error);
         });
 }
 
@@ -166,8 +222,13 @@ const startGame = () => {
     getData('/api/game/start')
         .then(() => {
             console.log("starting game...")
+            triggerSuccessToast('Rozpoczęto grę');
             getGameState();
             getPlayerState();
+        })
+        .catch(error => {
+            console.error('There was an error!', error);
+            triggerErrorToast(error);
         });
 }
 
@@ -185,6 +246,48 @@ const restartGame = () => {
         .then(() => {
             console.log("starting game...")
             getGameState();
+        })
+        .catch(error => {
+            console.error('There was an error!', error);
+            triggerErrorToast(error);
+        });
+}
+
+const move = () => {
+    if (playerState.state !== 'ACTIVE') {
+        triggerWarnToast('Nie możesz wykonać ruchu, czekaj na swoją kolej')
+        putAside = [];
+        updateGameState();
+        getPlayerState();
+        renderCardsOnHand();
+        renderPutAside();
+        return;
+    }
+    const moveDto = new Move(putAside);
+    putAside = [];
+
+    async function postData(url) {
+        await fetch(url, {
+            method: "POST",
+            body: JSON.stringify(moveDto),
+            headers: {
+                'Content-Type': 'application/json',
+                'uuid': getUserUuid()
+            }
+        });
+    }
+
+    postData('/api/game/move')
+        .then(() => {
+            console.log('user made move')
+            updateGameState();
+            getPlayerState();
+            renderCardsOnHand();
+            renderPutAside();
+        })
+        .catch(error => {
+            console.error('There was an error!', error);
+            triggerErrorToast(error);
         });
 }
 
@@ -241,7 +344,6 @@ const getCardIndexFromCardsOnHand = (card) => {
     return -1;
 }
 
-
 const renderPutAside = () => {
     const putAsideDom = document.getElementById("put-aside")
     const putAsideWrapperDom = document.getElementById("put-aside-wrapper")
@@ -260,33 +362,14 @@ const renderPutAside = () => {
     }
 }
 
-const move = () => {
-    const moveDto = new Move(putAside);
-    putAside = [];
-
-    async function postData(url) {
-        await fetch(url, {
-            method: "POST",
-            body: JSON.stringify(moveDto),
-            headers: {
-                'Content-Type': 'application/json',
-                'uuid': getUserUuid()
-            }
-        });
-    }
-
-    postData('/api/game/move')
-        .then(() => {
-            console.log('user made move')
-            updateGameState();
-            getPlayerState();
-            renderCardsOnHand();
-            renderPutAside();
-        })
-        .catch(error => {
-            console.error('There was an error!', error);
-        });
+const setUserUuid = (uuid) => {
+    localStorage.setItem("uuid", uuid);
 }
+
+const getUserUuid = () => {
+    return localStorage.getItem("uuid");
+}
+
 
 const putCardsBackToHand = () => {
     console.log('putCardsBackToHand')
@@ -326,6 +409,19 @@ const cardResolver = (stack, newCard, next) => {
     }
     return false;
 }
+
+const triggerErrorToast = (message) => {
+    toastr.error(message, 'Nieoczekiwany błąd')
+}
+
+const triggerSuccessToast = (message) => {
+    toastr.success(message)
+}
+
+const triggerWarnToast = (message) => {
+    toastr.warning(message)
+}
+
 
 setInterval('refreshGame()', 1000)
 

@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import pl.arturzaczek.makaoweb.game.player.Player;
 
 import java.util.List;
 
@@ -16,5 +15,5 @@ public class GameStateDto {
     private List<PlayerDto> playerList;
     private CardDto lastOnStack;
     private String gameState;
-    private Player activePlayer;
+    private String activePlayerUuid;
 }

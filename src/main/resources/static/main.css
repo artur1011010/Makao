@@ -8,14 +8,16 @@ h1 {
     text-align: center;
 }
 
-.clear{
+.clear {
     clear: both;
 }
 
 .main-wrapper {
     margin-left: auto;
     margin-right: auto;
+    margin-bottom: 50px;
     max-width: 800px;
+    overflow: auto;
 }
 
 .card {

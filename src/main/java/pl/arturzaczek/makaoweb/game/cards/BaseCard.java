@@ -23,6 +23,18 @@ public abstract class BaseCard {
         return value.equals(VALUE_2) || value.equals(VALUE_3) || value.equals(VALUE_4);
     }
 
+    public boolean is2(){
+        return value.equals(VALUE_2);
+    }
+
+    public boolean is3(){
+        return value.equals(VALUE_3);
+    }
+
+    public boolean is4(){
+        return value.equals(VALUE_4);
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(value);

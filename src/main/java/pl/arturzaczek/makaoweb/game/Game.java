@@ -106,8 +106,7 @@ public class Game {
         playerList.get(0).setState(Player.State.ACTIVE);
     }
 
-
-    private String getNextPlayerUuidByCurrentPlayer(Player player) {
+    private String getNextPlayerUuidByCurrentPlayer(final Player player) {
         final int currentPosition = playerList.indexOf(player);
         if (currentPosition < 0) {
             log.error("can not find current player position");
@@ -119,8 +118,7 @@ public class Game {
         return playerList.get(currentPosition + 1).getUuid();
     }
 
-
-    private String getPervPlayerUuidByCurrentPlayer(Player player) {
+    private String getPervPlayerUuidByCurrentPlayer(final Player player) {
         final int currentPosition = playerList.indexOf(player);
         if (currentPosition < 0) {
             log.error("can not find current player position");
@@ -130,6 +128,21 @@ public class Game {
             return playerList.get(playerList.size() - 1).getUuid();
         }
         return playerList.get(currentPosition + 1).getUuid();
+    }
+
+    public void toggleNextPlayerActive(final Player currentPlayer){
+        final int currentPosition = playerList.indexOf(currentPlayer);
+        currentPlayer.setState(Player.State.WAITING);
+        final Player nextPlayer = getNextPlayerByCurrentUuid(currentPlayer.getUuid());
+        nextPlayer.setState(Player.State.ACTIVE);
+    }
+
+    public String getActivePlayerUuid(){
+        return playerList.stream()
+                .filter(player -> player.getState() == Player.State.ACTIVE)
+                .map(Player::getUuid)
+                .findFirst()
+                .orElse("no active player");
     }
 
     @AllArgsConstructor

@@ -87,6 +87,19 @@ class GameTest {
     }
 
     @Test
+    public void shouldReturnNextPlayerByUuid2() {
+        final Game game = mockGame(Game.GameState.PLAYING);
+        final Player player = game.getNextPlayerByCurrentUuid("test2");
+        final Player expected = Player.builder()
+                .name("player3")
+                .uuid("test3")
+                .state(Player.State.WAITING)
+                .onHand(List.of(new Heart(CardValues._10.getValue()), new Spade(CardValues._10.getValue()), new Spade(CardValues._5.getValue()), new Heart(CardValues._9.getValue())))
+                .build();
+        Assertions.assertEquals(expected, player);
+    }
+
+    @Test
     public void shouldReturnPrevPlayerByUuid() {
         final Game game = mockGame(Game.GameState.PLAYING);
         final Player player = game.getPrevPlayerByCurrentUuid("test3");
@@ -138,6 +151,18 @@ class GameTest {
         Assertions.assertEquals(5, player2.getOnHand().size());
         Assertions.assertEquals(5, player3.getOnHand().size());
         Assertions.assertEquals(Game.GameState.PLAYING, game.getGameState());
+    }
+
+    @Test
+    public void shouldToggleNextPlayerActive() {
+        final Game game = mockGame(Game.GameState.OPEN);
+        final Player player1 = game.getPlayerByUuid("test1");
+        Assertions.assertDoesNotThrow(
+                ()-> game.toggleNextPlayerActive(player1));
+
+        final Player player2 = game.getPlayerByUuid("test2");
+        Assertions.assertEquals(Player.State.ACTIVE, player2.getState());
+        Assertions.assertEquals(Player.State.WAITING, player1.getState());
     }
 
     public Game mockGame(final Game.GameState state) {

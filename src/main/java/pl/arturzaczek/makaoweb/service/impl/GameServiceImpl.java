@@ -80,15 +80,16 @@ public class GameServiceImpl implements GameService {
                         .name(player.getName())
                         .build()).collect(Collectors.toList()))
                 .lastOnStack(cardResolver.getCardDto(game.getCardDeck().getLastOnStack()))
+                .activePlayerUuid(game.getActivePlayerUuid())
                 .build();
     }
 
     @Override
     public void move(final String uuid, final MoveDto moveDto) {
         log.info("\nuuid {}\nmoveDto {}", uuid, moveDto);
-        final Player playerByUuid = game.getPlayerByUuid(uuid);
+        final Player currentPlayer = game.getPlayerByUuid(uuid);
         if (CollectionUtils.isEmpty(moveDto.getPutAside())) {
-            playerByUuid.getOnHand().add(game.getCardDeck().getNextCard());
+            currentPlayer.getOnHand().add(game.getCardDeck().getNextCard());
             log.info("nie odłozono kart - dobierasz");
         } else {
             log.info("odłozono karty");
@@ -96,11 +97,21 @@ public class GameServiceImpl implements GameService {
                     .stream()
                     .map(cardResolver::getBaseCard)
                     .collect(Collectors.toList());
-
             game.getCardDeck().setLastOnStack(baseCards.get(baseCards.size() - 1));
             log.info("ustawiono ostatnia karte na {}", baseCards.get(0));
-            playerByUuid.removeCardsFromHand(baseCards);
+            currentPlayer.removeCardsFromHand(baseCards);
+
+            if (checkIfCardsAreFunctional(baseCards)) {
+                if (baseCards.stream().anyMatch(BaseCard::is2)) {
+                    actionCard2(currentPlayer, baseCards.size());
+                } else if (baseCards.stream().anyMatch(BaseCard::is3)) {
+                    actionCard3(currentPlayer, baseCards.size());
+                } else if (baseCards.stream().anyMatch(BaseCard::is4)) {
+                    actionCard4(currentPlayer, baseCards.size());
+                }
+            }
         }
+        game.toggleNextPlayerActive(currentPlayer);
     }
 
     private boolean checkIfCardsAreFunctional(final List<BaseCard> baseCards) {
@@ -109,26 +120,36 @@ public class GameServiceImpl implements GameService {
     }
 
 
-    private void actionCard2(final Player player) {
-        final Player nextPlayer = game.getNextPlayerByCurrentUuid(player.getUuid());
+    private void actionCard2(final Player currentPlayer, final int functionalCardsOnStack) {
+        final Player nextPlayer = game.getNextPlayerByCurrentUuid(currentPlayer.getUuid());
         if (nextPlayer.has2OnHand()) {
             nextPlayer.setRequestedCardsInNextMove(CardHelper.ALL2.getCards());
         } else {
-
+            final int amount = 2 * functionalCardsOnStack;
+            nextPlayer.getOnHand().addAll(game.getCardDeck().getNextCard(amount));
+            log.info("Player: {} got {} cards penalty ", nextPlayer.getName(), amount);
         }
     }
 
-    private void actionCard3(final Player player) {
-        final Player nextPlayer = game.getNextPlayerByCurrentUuid(player.getUuid());
+    private void actionCard3(final Player currentPlayer, final int functionalCardsOnStack) {
+        final Player nextPlayer = game.getNextPlayerByCurrentUuid(currentPlayer.getUuid());
         if (nextPlayer.has3OnHand()) {
             nextPlayer.setRequestedCardsInNextMove(CardHelper.ALL3.getCards());
+        } else {
+            final int amount = 3 * functionalCardsOnStack;
+            nextPlayer.getOnHand().addAll(game.getCardDeck().getNextCard(amount));
+            log.info("Player: {} got {} cards penalty ", nextPlayer.getName(), amount);
         }
     }
 
-    private void actionCard4(final Player player) {
-        final Player nextPlayer = game.getNextPlayerByCurrentUuid(player.getUuid());
+    private void actionCard4(final Player currentPlayer, final int functionalCardsOnStack) {
+        final Player nextPlayer = game.getNextPlayerByCurrentUuid(currentPlayer.getUuid());
         if (nextPlayer.has4OnHand()) {
             nextPlayer.setRequestedCardsInNextMove(CardHelper.ALL4.getCards());
+        } else {
+            nextPlayer.getOnHand().add(game.getCardDeck().getNextCard());
+            nextPlayer.setMovementsBlocked(functionalCardsOnStack);
+            log.info("Player: {} got penalty, waiting {} rounds", nextPlayer.getName(), functionalCardsOnStack);
         }
     }
 }
