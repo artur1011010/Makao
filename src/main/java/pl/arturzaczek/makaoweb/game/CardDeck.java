@@ -68,6 +68,7 @@ public class CardDeck {
         cards.stream()
                 .filter(card -> !cardsInUse.contains(card))
                 .forEach(deck::add);
+        Collections.shuffle(deck);
     }
 
     public void putFirstCardAway() {

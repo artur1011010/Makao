@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.arturzaczek.makaoweb.rest.dto.GameStateDto;
 import pl.arturzaczek.makaoweb.rest.dto.MoveDto;
 import pl.arturzaczek.makaoweb.rest.dto.PlayerDto;
-import pl.arturzaczek.makaoweb.service.GameService;
+import pl.arturzaczek.makaoweb.service.MakaoGameService;
 
 @RequestMapping("/api")
 @RestController
@@ -16,7 +16,7 @@ import pl.arturzaczek.makaoweb.service.GameService;
 @RequiredArgsConstructor
 public class GameController {
 
-    private final GameService service;
+    private final MakaoGameService service;
 
     @PostMapping("/player")
     public ResponseEntity<Pair<String, String>> createPlayerAndJoinGame(@RequestParam final String name) {

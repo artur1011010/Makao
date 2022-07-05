@@ -262,6 +262,7 @@ const restartGame = () => {
         .then(() => {
             console.log("starting game...")
             getGameState();
+            getPlayerState();
         })
         .catch(error => {
             console.error('There was an error!', error);
@@ -313,13 +314,19 @@ const updateGameState = () => {
     stateText.innerHTML = gameState.renderGameState()
     if (gameState.gameState === "PLAYING") {
         populateLastCardOnStack(gameState.lastOnStack);
+    }else {
+        hideLastCardOnDeck();
     }
+}
+
+const hideLastCardOnDeck = () =>{
+    const domObj = document.getElementById("last-on-stack")
+    domObj.innerHTML = '';
 }
 
 const populateLastCardOnStack = (card) => {
     const domObj = document.getElementById("last-on-stack")
     const cardd = new Card(undefined, undefined, card)
-    console.log(cardd)
     domObj.innerHTML = cardd.getCardHtml();
 }
 
@@ -337,6 +344,7 @@ const renderCardsOnHand = () => {
 
 const renderCardsOnHandAndCheckDisabled = () => {
     const onHand1 = document.getElementById("on-hand")
+    onHand1.innerHTML = "";
     let result = '';
     const requestedCards = playerState.requestedCardsInNextMove;
     if (requestedCards === undefined || requestedCards === null || requestedCards.length === 0) {

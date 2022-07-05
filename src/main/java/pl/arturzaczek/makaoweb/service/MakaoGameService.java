@@ -6,7 +6,7 @@ import pl.arturzaczek.makaoweb.rest.dto.MoveDto;
 import pl.arturzaczek.makaoweb.rest.dto.PlayerDto;
 
 
-public interface GameService {
+public interface MakaoGameService {
 
     Pair<String, String> createPlayerAndJoinGame(String name);
 

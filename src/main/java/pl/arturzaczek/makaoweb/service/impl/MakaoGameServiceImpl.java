@@ -12,7 +12,7 @@ import pl.arturzaczek.makaoweb.rest.dto.GameStateDto;
 import pl.arturzaczek.makaoweb.rest.dto.MoveDto;
 import pl.arturzaczek.makaoweb.rest.dto.PlayerDto;
 import pl.arturzaczek.makaoweb.utils.CardHelper;
-import pl.arturzaczek.makaoweb.service.GameService;
+import pl.arturzaczek.makaoweb.service.MakaoGameService;
 import pl.arturzaczek.makaoweb.utils.CardResolver;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class GameServiceImpl implements GameService {
+public class MakaoGameServiceImpl implements MakaoGameService {
 
     private final Game game;
     private final CardResolver cardResolver;
@@ -96,15 +96,12 @@ public class GameServiceImpl implements GameService {
         final Player nextPlayer = game.getNextWaitingPlayerAndSetActiveByCurrentUuid(currentPlayer.getUuid());
         if (CollectionUtils.isEmpty(moveDto.getPutAside())) {
             game.addCardsToPlayerHand(1, currentPlayer);
-            log.info("nie odłozono kart - dobierasz");
         } else {
-            log.info("odłozono karty");
             final List<BaseCard> baseCards = moveDto.getPutAside()
                     .stream()
                     .map(cardResolver::getBaseCard)
                     .collect(Collectors.toList());
             game.getCardDeck().setLastOnStack(baseCards.get(baseCards.size() - 1));
-            log.info("ustawiono ostatnia karte na {}", baseCards.get(0));
             currentPlayer.removeCardsFromHand(baseCards);
             if (checkIfCardsAreFunctional(baseCards)) {
                 if (baseCards.stream().anyMatch(BaseCard::is2)) {
@@ -128,11 +125,10 @@ public class GameServiceImpl implements GameService {
         if (nextPlayer.has2OnHand()) {
             game.setFunctionalCards(game.getFunctionalCards() + functionalCardsOnStack);
             nextPlayer.setRequestedCardsInNextMove(CardHelper.ALL2.getCards());
-            log.info("ustawiono wymagane karty do następnego ruchu: {}", nextPlayer);
         } else {
-            final int amount = 2 * functionalCardsOnStack;
+            final int amount = 2 * (functionalCardsOnStack + game.getFunctionalCards());
             game.addCardsToPlayerHand(amount, nextPlayer);
-            log.info("Player: {} got {} cards penalty ", nextPlayer.getName(), amount);
+            game.setFunctionalCards(0);
         }
     }
 
@@ -140,11 +136,10 @@ public class GameServiceImpl implements GameService {
         if (nextPlayer.has3OnHand()) {
             game.setFunctionalCards(game.getFunctionalCards() + functionalCardsOnStack);
             nextPlayer.setRequestedCardsInNextMove(CardHelper.ALL3.getCards());
-            log.info("ustawiono wymagane karty do następnego ruchu: {}", nextPlayer);
         } else {
-            final int amount = 3 * functionalCardsOnStack;
+            final int amount = 3 * (functionalCardsOnStack + game.getFunctionalCards());
             game.addCardsToPlayerHand(amount, nextPlayer);
-            log.info("Player: {} got {} cards penalty ", nextPlayer.getName(), amount);
+            game.setFunctionalCards(0);
         }
     }
 
@@ -152,11 +147,12 @@ public class GameServiceImpl implements GameService {
         if (nextPlayer.has4OnHand()) {
             game.setFunctionalCards(game.getFunctionalCards() + functionalCardsOnStack);
             nextPlayer.setRequestedCardsInNextMove(CardHelper.ALL4.getCards());
-            log.info("ustawiono wymagane karty do następnego ruchu: {}", nextPlayer);
         } else {
             //todo umozliwia wykonanie nastepnej kolejki - trzeba zastosować od razu
-            nextPlayer.setMovementsBlocked(functionalCardsOnStack);
-            log.info("Player: {} got penalty, waiting {} rounds", nextPlayer.getName(), functionalCardsOnStack);
+            nextPlayer.setMovementsBlocked(functionalCardsOnStack + game.getFunctionalCards());
+            nextPlayer.setState(Player.State.BLOCKED);
+            game.getNextWaitingPlayerAndSetActiveByCurrentUuid(nextPlayer.getUuid());
+            game.setFunctionalCards(0);
         }
     }
 

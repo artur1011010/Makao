@@ -36,17 +36,10 @@ public class Game {
     }
 
     public void restartGame() {
-        if (playerList.size() < 2) {
-            log.error("Too few players");
-            return;
-        }
         cardDeck = new CardDeck();
-        gameState = GameState.PLAYING;
-        playerList.forEach(player -> {
-            player.setOnHand(new ArrayList<>());
-            player.setState(Player.State.WAITING);
-        });
-        firstDeal();
+        gameState = GameState.OPEN;
+        playerList.clear();
+        functionalCards = 0;
     }
 
     public void setGameStateFinishedAndClearTable() {
