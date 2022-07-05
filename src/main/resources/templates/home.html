@@ -8,14 +8,13 @@
           integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
     <link href="./toastr.min.css" rel="stylesheet">
     <link href="./main.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="./img/cards/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="./img/favicon.ico">
 
 </head>
 <body>
 <div class="main-wrapper">
-
     <h1 id="game-header">Makao</h1>
-    <div id="game-header-image"><img src="./img/cards/favicon.ico" alt="makao"></div>
+    <div id="game-header-image"><img src="./img/favicon.ico" alt="makao"></div>
     <div class="p-3 m-1 bg-light border rounded-3">
         <div class="mb-3">
             <label for="player-name" class="form-label">Imie gracza</label>
@@ -23,11 +22,13 @@
         </div>
         <button type="button" onclick="createPlayer()" class="btn btn-outline-dark">Ustaw nazwe gracza i dolacz do gry
         </button>
-<!--        <button type="button" onclick="getGameState()" class="btn btn-outline-dark">Pokaż stan gry</button>-->
-<!--        <button type="button" onclick="getPlayerState()" class="btn btn-outline-dark">Pokaż stan gracza</button>-->
+        <!--        <button type="button" onclick="getGameState()" class="btn btn-outline-dark">Pokaż stan gry</button>-->
+        <button type="button" onclick="getPlayerState()" class="btn btn-outline-dark">Pokaż stan gracza</button>
         <button type="button" onclick="startGame()" class="btn btn-outline-dark">Rozpocznij grę</button>
-<!--        <button type="button" onclick="restartGame()" class="btn btn-outline-dark">Rozpocznij grę od nowa(sprawdzic czy dziala)</button>-->
-        <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#rulesModal">Zasady gry</button>
+        <!--        <button type="button" onclick="restartGame()" class="btn btn-outline-dark">Rozpocznij grę od nowa(sprawdzic czy dziala)</button>-->
+        <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal" data-bs-target="#rulesModal">Zasady
+            gry
+        </button>
         <hr class="clear">
         <div id="game-state"></div>
     </div>
@@ -46,25 +47,43 @@
     <div id="on-hand"></div>
     <button type="button" onclick="move()" class="btn btn-outline-dark clear">wykonaj ruch</button>
 </div>
-<div class="modal fade modal-lg" id="rulesModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade modal-lg" id="rulesModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Zasady gry Makao</h5>
+                <h5 class="modal-title">Zasady gry Makao</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                Gracze ustalają kolejność, w jakiej będą zagrywać, ale zwykle jest ona zgodna z ruchem wskazówek zegara. Każdy z graczy otrzymuje po 5 losowo wybranych kart, które powinien trzymać w taki sposób, aby przeciwnicy nie mogli ich poznać. Z pozostałych kart wykłada się pierwszą w sposób widoczny dla wszystkich graczy, lecz nie może być to karta funkcyjna. Zwykle odkrywa się karty aż do wyłożenia niefunkcyjnej.
-
-                Ogólna zasada polega na porównaniu własnych kart z kartą leżącą na stole. Jeśli gracz ma jakąś kartę, która odpowiada kolorem lub figurą karcie leżącej na stole, może wyłożyć tę kartę, zakrywając leżącą na wierzchu. Przykładowo, jeśli na stole leży karta 5♣ to gracz mający 5♥ 10♣ W♠ K♥ 2♦ może położyć 5♥ albo 10♣. Jeżeli gracz nie może (ewentualnie nie chce) dołożyć pasującej karty, to musi zamiast tego dobrać jedną z kart z talii. Gracz może wyłożyć naraz przynajmniej jedną kartę z tą samą figurą albo tym samym kolorem (na spodzie musi być ta, która pasuje do poprzedniej). Teoretycznie przy grze jedną talią można tak wyłożyć nawet 6 lub 7 kart w zależności od liczby jokerów w talii (2 lub 3), w takiej sytuacji gracz może zagrać np. 4 damy plus 2 lub 3 jokery. Jeśli pobrana przez gracza karta pasuje do leżącej na stosie, to gracz może od razu ją na ten stos odłożyć (zgodnie z zasadą „pierwsza karta ratuje”). Gdy gracz wyłoży „ratującą kartę”, może mieć możliwość (w zależności od wariantu reguł) zagrać wraz z nią jedną lub kilka z ręki, np. wyrzucić ratującą szóstkę wraz z inną szóstką.
-
-                Oddając swoją przedostatnią kartę gracz musi wypowiedzieć słowo „makao”. Jeśli tego nie zrobi, a przeciwnicy w jakikolwiek sposób to zauważą i poinformują o tym („stop makao”), gracz taki musi pobrać 5 kart z talii[2].
-
-                Kończąc grę można położyć dwie, trzy lub cztery takie same karty. Wówczas zależnie od przyjętej zasady, należy wypowiedzieć formułę „makao i po makale” lub formuły można nie wypowiadać wcale.
-
-                Jeżeli wszystkie karty w stosie skończą się, stos kart dokładanych przez graczy powinien zostać przetasowany i odwrócony tak, aby w stosie była tylko jedna karta (ta sama, która była u góry stosu przed przetasowaniem).
-
-                Wygrywa ten gracz, który jako pierwszy pozbędzie się wszystkich swoich kart. Pozostali gracze kontynuują grę o miejsce drugie, trzecie itd.
+                Gracze ustalają kolejność, w jakiej będą zagrywać, ale zwykle jest ona zgodna z ruchem wskazówek zegara.
+                Każdy z graczy otrzymuje po 5 losowo wybranych kart, które powinien trzymać w taki sposób, aby
+                przeciwnicy nie mogli ich poznać.
+                Z pozostałych kart wykłada się pierwszą w sposób widoczny dla wszystkich graczy, lecz nie może być to
+                karta funkcyjna. Zwykle odkrywa się karty aż do wyłożenia niefunkcyjnej.
+                Ogólna zasada polega na porównaniu własnych kart z kartą leżącą na stole. Jeśli gracz ma jakąś kartę,
+                która odpowiada kolorem lub figurą karcie leżącej na stole, może wyłożyć tę kartę, zakrywając leżącą na
+                wierzchu. Przykładowo,
+                jeśli na stole leży karta 5♣ to gracz mający 5♥ 10♣ W♠ K♥ 2♦ może położyć 5♥ albo 10♣. Jeżeli gracz nie
+                może (ewentualnie nie chce) dołożyć pasującej karty, to musi zamiast tego dobrać jedną z kart z talii.
+                Gracz może wyłożyć
+                naraz przynajmniej jedną kartę z tą samą figurą albo tym samym kolorem (na spodzie musi być ta, która
+                pasuje do poprzedniej). Teoretycznie przy grze jedną talią można tak wyłożyć nawet 6 lub 7 kart w
+                zależności od liczby jokerów w talii (2 lub 3),
+                w takiej sytuacji gracz może zagrać np. 4 damy plus 2 lub 3 jokery. Jeśli pobrana przez gracza karta
+                pasuje do leżącej na stosie, to gracz może od razu ją na ten stos odłożyć (zgodnie z zasadą „pierwsza
+                karta ratuje”). Gdy gracz wyłoży „ratującą kartę”,
+                może mieć możliwość (w zależności od wariantu reguł) zagrać wraz z nią jedną lub kilka z ręki, np.
+                wyrzucić ratującą szóstkę wraz z inną szóstką.
+                Oddając swoją przedostatnią kartę gracz musi wypowiedzieć słowo „makao”. Jeśli tego nie zrobi, a
+                przeciwnicy w jakikolwiek sposób to zauważą i poinformują o tym („stop makao”), gracz taki musi pobrać 5
+                kart z talii[2].
+                Kończąc grę można położyć dwie, trzy lub cztery takie same karty. Wówczas zależnie od przyjętej zasady,
+                należy wypowiedzieć formułę „makao i po makale” lub formuły można nie wypowiadać wcale.
+                Jeżeli wszystkie karty w stosie skończą się, stos kart dokładanych przez graczy powinien zostać
+                przetasowany i odwrócony tak, aby w stosie była tylko jedna karta (ta sama, która była u góry stosu
+                przed przetasowaniem).
+                Wygrywa ten gracz, który jako pierwszy pozbędzie się wszystkich swoich kart. Pozostali gracze kontynuują
+                grę o miejsce drugie, trzecie itd.
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

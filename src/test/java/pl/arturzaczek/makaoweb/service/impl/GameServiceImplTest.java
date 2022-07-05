@@ -35,21 +35,21 @@ class GameServiceImplTest {
                 .name("player1")
                 .uuid("test1")
                 .state(Player.State.ACTIVE)
-                .onHand(List.of(CardHelper.S2.getCard(), new Diamond(CardValues._5.getValue()), new Heart(CardValues._5.getValue()), new Spade(CardValues._Jack.getValue()), new Spade(CardValues._6.getValue())))
+//                .onHand(List.of(CardHelper.S2.getCard(), new Diamond(CardValues._5.getValue()), new Heart(CardValues._5.getValue()), new Spade(CardValues._Jack.getValue()), new Spade(CardValues._6.getValue())))
                 .build();
 
         final Player player2 = Player.builder()
                 .name("player2")
                 .uuid("test2")
                 .state(Player.State.WAITING)
-                .onHand(List.of(new Diamond(CardValues._10.getValue()), new Spade(CardValues._6.getValue()), new Spade(CardValues._7.getValue()), new Spade(CardValues._9.getValue())))
+//                .onHand(List.of(new Diamond(CardValues._10.getValue()), new Spade(CardValues._6.getValue()), new Spade(CardValues._7.getValue()), new Spade(CardValues._9.getValue())))
                 .build();
 
         final Player player3 = Player.builder()
                 .name("player3")
                 .uuid("test3")
                 .state(Player.State.WAITING)
-                .onHand(List.of(new Heart(CardValues._10.getValue()), new Spade(CardValues._10.getValue()), new Spade(CardValues._5.getValue()), new Heart(CardValues._9.getValue())))
+//                .onHand(List.of(new Heart(CardValues._10.getValue()), new Spade(CardValues._10.getValue()), new Spade(CardValues._5.getValue()), new Heart(CardValues._9.getValue())))
                 .build();
 
         Game game = new Game();

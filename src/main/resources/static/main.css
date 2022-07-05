@@ -57,3 +57,8 @@ h1 {
 .action-card {
 
 }
+
+.action-disabled {
+    filter: blur(1px);
+    opacity: 0.3;
+}

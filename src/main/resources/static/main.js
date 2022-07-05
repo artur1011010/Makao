@@ -48,7 +48,7 @@ class GameState {
                 state1 = "czeka na swoją kolej"
                 break;
             case "FINISHED":
-                state1 = "zakonczył gre"
+                state1 = "wygrał! - zakonczył gre"
                 break;
             case "IDLE":
                 state1 = "bezczynny - nie uczestniczy w grze"
@@ -91,12 +91,29 @@ class Card {
             onClick='cardAction("${this.color}" , "${this.value}")' data-bs-toggle="tooltip" data-bs-placement="top" title="połóż kartę"></div>`;
     }
 
+    getDisabledCardOnHand() {
+        return `<div class="card action-disabled ${this.color + this.value}" ${this.getImage(this.color, this.value)} 
+             data-bs-toggle="tooltip" data-bs-placement="top" title="nie możesz użyć tej karty w tym ruchu"></div>`;
+    }
+
     getPutAsideCard() {
         return `<div class="card ${this.color + this.value}" ${this.getImage(this.color, this.value)} data-bs-toggle="tooltip" data-bs-placement="top" title="możesz cofnąc wybór przyciskiem"></div>`;
     }
 
     getImage(color, value) {
         return `style='background-image: url("./img/cards/${color.toLowerCase()}-${value.toLowerCase()}.png");'`;
+    }
+
+    isRequested() {
+        if (playerState.requestedCardsInNextMove !== undefined && playerState.requestedCardsInNextMove !== null && playerState.requestedCardsInNextMove.length > 0) {
+            const array = playerState.requestedCardsInNextMove;
+            for (const card of array) {
+                if (card.color === this.color && card.value === this.value) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     equals(object2) {
@@ -116,9 +133,10 @@ let gameState = new GameState(undefined, [], null, 'OPEN', null);
 
 let playerState = {
     name: '',
-    onHand: [],
     state: 'IDLE',
     movementsBlocked: 0,
+    onHand: [],
+    requestedCardsInNextMove: [],
     uuid: ''
 }
 
@@ -167,8 +185,10 @@ const getPlayerState = () => {
 
     getData('/api/player/state')
         .then(data => {
-            playerState = new GameState(data)
-            renderCardsOnHand()
+            playerState = new PlayerState(data)
+            console.log('playerState:' + JSON.stringify(playerState, null, 4))
+            // renderCardsOnHand();
+            renderCardsOnHandAndCheckDisabled();
         })
         .catch(error => {
             console.error('There was an error!', error);
@@ -189,12 +209,12 @@ const getGameState = () => {
     getData('/api/game/state')
         .then(data => {
             const newState = new GameState(data)
-            if(newState.activePlayerUuid !== gameState.activePlayerUuid){
+            if (newState.activePlayerUuid !== gameState.activePlayerUuid) {
                 console.log("status gry sie zmienił")
                 getPlayerState();
             }
             gameState = newState;
-            if(!newState.equals(gameState)){
+            if (!newState.equals(gameState)) {
                 gameState = newState;
             }
             updateGameState();
@@ -255,7 +275,7 @@ const move = () => {
         putAside = [];
         updateGameState();
         getPlayerState();
-        renderCardsOnHand();
+        renderCardsOnHandAndCheckDisabled();
         renderPutAside();
         return;
     }
@@ -275,10 +295,11 @@ const move = () => {
 
     postData('/api/game/move')
         .then(() => {
-            console.log('user made move')
+            // console.log('user made move')
             updateGameState();
             getPlayerState();
-            renderCardsOnHand();
+            // renderCardsOnHand();
+            renderCardsOnHandAndCheckDisabled();
             renderPutAside();
         })
         .catch(error => {
@@ -314,6 +335,38 @@ const renderCardsOnHand = () => {
     }
 }
 
+const renderCardsOnHandAndCheckDisabled = () => {
+    const onHand1 = document.getElementById("on-hand")
+    let result = '';
+    const requestedCards = playerState.requestedCardsInNextMove;
+    if (requestedCards === undefined || requestedCards === null || requestedCards.length === 0) {
+        console.log("requestedCards empty")
+        if (playerState.onHand !== undefined && playerState.onHand.length > 0) {
+            console.log("no requested cards")
+            playerState.onHand = playerState.onHand.map(card => new Card(undefined, undefined, card));
+            playerState.onHand.forEach(card => {
+                result += card.getOnHandCard();
+            })
+            onHand1.innerHTML = result;
+        }
+    } else {
+        if (playerState.onHand !== undefined && playerState.onHand.length > 0) {
+            console.log("requested cards present!")
+            playerState.onHand = playerState.onHand.map(card => new Card(undefined, undefined, card));
+            playerState.onHand.forEach(card => {
+                if (card.isRequested()) {
+                    console.log("karta - aktywna")
+                    result += card.getOnHandCard();
+                } else {
+                    console.log("karta - nieaktywna")
+                    result += card.getDisabledCardOnHand();
+                }
+            })
+            onHand1.innerHTML = result;
+        }
+    }
+}
+
 const cardAction = (color, value) => {
     const card = new Card(color, value);
     const indexToRemove = getCardIndexFromCardsOnHand(card)
@@ -327,7 +380,7 @@ const cardAction = (color, value) => {
     }
     putAside.push(card);
     playerState.onHand.splice(getCardIndexFromCardsOnHand(card), 1);
-    renderCardsOnHand();
+    renderCardsOnHandAndCheckDisabled();
     renderPutAside();
 }
 
@@ -371,7 +424,7 @@ const putCardsBackToHand = () => {
     console.log('putCardsBackToHand')
     playerState.onHand.push(...putAside);
     putAside = [];
-    renderCardsOnHand();
+    renderCardsOnHandAndCheckDisabled();
     renderPutAside();
 }
 
@@ -424,3 +477,20 @@ setInterval('refreshGame()', 1000)
 function refreshGame() {
     getGameState();
 }
+
+//tests
+
+playerState.requestedCardsInNextMove = [new Card("Club", "2"), new Card("Heart", "2")]
+
+function test() {
+    const card = new Card("Club", "2");
+    console.log(card.isRequested());
+    const card1 = new Card("Heart", "2");
+    console.log(card1.isRequested());
+    const card2 = new Card("Heart", "4");
+    console.log(card2.isRequested());
+    const card3 = new Card("Diamond", "2");
+    console.log(card3.isRequested());
+}
+
+test();

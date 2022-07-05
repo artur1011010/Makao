@@ -1,4 +1,4 @@
-package pl.arturzaczek.makaoweb.rest;
+package pl.arturzaczek.makaoweb.rest.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,7 @@ public class GameController {
 
     @GetMapping("/game/state")
     public ResponseEntity<GameStateDto> getGameState() {
-        log.info("GET  api/game/state");
+//        log.info("GET  api/game/state");
         return ResponseEntity.ok(service.getGameStateDto());
     }
 

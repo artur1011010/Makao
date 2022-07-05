@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import pl.arturzaczek.makaoweb.game.cards.BaseCard;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -12,8 +14,9 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class GameStateDto {
-    private List<PlayerDto> playerList;
     private CardDto lastOnStack;
     private String gameState;
     private String activePlayerUuid;
+    private List<PlayerDto> playerList = new ArrayList<>();
+    private List<BaseCard> requestedCardsInNextMove = new ArrayList<>();
 }

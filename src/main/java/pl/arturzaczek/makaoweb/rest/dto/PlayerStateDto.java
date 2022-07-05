@@ -1,6 +1,7 @@
 package pl.arturzaczek.makaoweb.rest.dto;
 
 import lombok.*;
+import pl.arturzaczek.makaoweb.game.cards.BaseCard;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +11,8 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class PlayerStateDto {
-    String playerName;
-    String playerState;
-    List<CardDto> cardOnHand = new ArrayList<>();
+    private String playerName;
+    private String playerState;
+    private List<CardDto> cardOnHand = new ArrayList<>();
+    private List<BaseCard> requestedCardsInNextMove = new ArrayList<>();
 }

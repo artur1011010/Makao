@@ -122,5 +122,4 @@ class PlayerTest {
         Assertions.assertEquals(0, player.getMovementsBlocked());
         Assertions.assertEquals(Player.State.WAITING, player.getState());
     }
-
 }

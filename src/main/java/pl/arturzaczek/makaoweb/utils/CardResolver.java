@@ -1,9 +1,10 @@
 package pl.arturzaczek.makaoweb.utils;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import pl.arturzaczek.makaoweb.game.cards.*;
-import pl.arturzaczek.makaoweb.game.exception.CardException;
+import pl.arturzaczek.makaoweb.rest.exception.CardException;
 import pl.arturzaczek.makaoweb.rest.dto.CardDto;
 
 @Component
@@ -25,7 +26,7 @@ public class CardResolver {
             case "Spade":
                 return new CardDto(baseCard.getValue(), "Spade");
         }
-        throw new CardException("can not resolve card type");
+        throw new CardException(HttpStatus.INTERNAL_SERVER_ERROR.toString(), "can not resolve card type");
     }
 
     public BaseCard getBaseCard(final CardDto cardDto) {
@@ -44,6 +45,6 @@ public class CardResolver {
             case "Spade":
                 return new Spade(cardDto.getValue());
         }
-        throw new CardException("can not resolve card type");
+        throw new CardException(HttpStatus.INTERNAL_SERVER_ERROR.toString(),"can not resolve card type");
     }
 }

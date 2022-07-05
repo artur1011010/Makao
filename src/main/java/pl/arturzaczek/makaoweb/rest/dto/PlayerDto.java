@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import pl.arturzaczek.makaoweb.game.cards.BaseCard;
 import pl.arturzaczek.makaoweb.game.player.Player;
 
 import java.util.ArrayList;
@@ -19,6 +18,6 @@ public class PlayerDto {
     private List<CardDto> onHand = new ArrayList<>();
     private Player.State state;
     private int movementsBlocked;
-    private List<BaseCard> requestedCardsInNextMove = new ArrayList<>();
+    private List<CardDto> requestedCardsInNextMove = new ArrayList<>();
     private String uuid;
 }

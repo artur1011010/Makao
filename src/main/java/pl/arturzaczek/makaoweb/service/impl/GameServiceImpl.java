@@ -47,12 +47,16 @@ public class GameServiceImpl implements GameService {
         final Player player = game.getPlayerByUuid(uuid);
         return PlayerDto.builder()
                 .state(player.getState() == null ? Player.State.IDLE : player.getState())
-                .movementsBlocked(player.getMovementsBlocked())
+                .name(player.getName())
                 .onHand(player.getOnHand()
                         .stream()
                         .map(cardResolver::getCardDto)
                         .collect(Collectors.toList()))
-                .name(player.getName())
+                .movementsBlocked(player.getMovementsBlocked())
+                .requestedCardsInNextMove(player.getRequestedCardsInNextMove() != null ? player.getRequestedCardsInNextMove()
+                        .stream()
+                        .map(cardResolver::getCardDto)
+                        .collect(Collectors.toList()) : new ArrayList<>())
                 .build();
     }
 
@@ -88,8 +92,10 @@ public class GameServiceImpl implements GameService {
     public void move(final String uuid, final MoveDto moveDto) {
         log.info("\nuuid {}\nmoveDto {}", uuid, moveDto);
         final Player currentPlayer = game.getPlayerByUuid(uuid);
+        clearPlayerAfterMove(currentPlayer);
+        final Player nextPlayer = game.getNextWaitingPlayerAndSetActiveByCurrentUuid(currentPlayer.getUuid());
         if (CollectionUtils.isEmpty(moveDto.getPutAside())) {
-            currentPlayer.getOnHand().add(game.getCardDeck().getNextCard());
+            game.addCardsToPlayerHand(1, currentPlayer);
             log.info("nie odłozono kart - dobierasz");
         } else {
             log.info("odłozono karty");
@@ -100,18 +106,16 @@ public class GameServiceImpl implements GameService {
             game.getCardDeck().setLastOnStack(baseCards.get(baseCards.size() - 1));
             log.info("ustawiono ostatnia karte na {}", baseCards.get(0));
             currentPlayer.removeCardsFromHand(baseCards);
-
             if (checkIfCardsAreFunctional(baseCards)) {
                 if (baseCards.stream().anyMatch(BaseCard::is2)) {
-                    actionCard2(currentPlayer, baseCards.size());
+                    actionCard2(nextPlayer, baseCards.size());
                 } else if (baseCards.stream().anyMatch(BaseCard::is3)) {
-                    actionCard3(currentPlayer, baseCards.size());
+                    actionCard3(nextPlayer, baseCards.size());
                 } else if (baseCards.stream().anyMatch(BaseCard::is4)) {
-                    actionCard4(currentPlayer, baseCards.size());
+                    actionCard4(nextPlayer, baseCards.size());
                 }
             }
         }
-        game.toggleNextPlayerActive(currentPlayer);
         checkIfAnyPlayerWonAndRestartGame();
     }
 
@@ -120,44 +124,52 @@ public class GameServiceImpl implements GameService {
                 .anyMatch(BaseCard::isFunctionalCard);
     }
 
-
-    private void actionCard2(final Player currentPlayer, final int functionalCardsOnStack) {
-        final Player nextPlayer = game.getNextPlayerByCurrentUuid(currentPlayer.getUuid());
+    private void actionCard2(final Player nextPlayer, final int functionalCardsOnStack) {
         if (nextPlayer.has2OnHand()) {
+            game.setFunctionalCards(game.getFunctionalCards() + functionalCardsOnStack);
             nextPlayer.setRequestedCardsInNextMove(CardHelper.ALL2.getCards());
+            log.info("ustawiono wymagane karty do następnego ruchu: {}", nextPlayer);
         } else {
             final int amount = 2 * functionalCardsOnStack;
-            nextPlayer.getOnHand().addAll(game.getCardDeck().getNextCard(amount));
+            game.addCardsToPlayerHand(amount, nextPlayer);
             log.info("Player: {} got {} cards penalty ", nextPlayer.getName(), amount);
         }
     }
 
-    private void actionCard3(final Player currentPlayer, final int functionalCardsOnStack) {
-        final Player nextPlayer = game.getNextPlayerByCurrentUuid(currentPlayer.getUuid());
+    private void actionCard3(final Player nextPlayer, final int functionalCardsOnStack) {
         if (nextPlayer.has3OnHand()) {
+            game.setFunctionalCards(game.getFunctionalCards() + functionalCardsOnStack);
             nextPlayer.setRequestedCardsInNextMove(CardHelper.ALL3.getCards());
+            log.info("ustawiono wymagane karty do następnego ruchu: {}", nextPlayer);
         } else {
             final int amount = 3 * functionalCardsOnStack;
-            nextPlayer.getOnHand().addAll(game.getCardDeck().getNextCard(amount));
+            game.addCardsToPlayerHand(amount, nextPlayer);
             log.info("Player: {} got {} cards penalty ", nextPlayer.getName(), amount);
         }
     }
 
-    private void actionCard4(final Player currentPlayer, final int functionalCardsOnStack) {
-        final Player nextPlayer = game.getNextPlayerByCurrentUuid(currentPlayer.getUuid());
+    private void actionCard4(final Player nextPlayer, final int functionalCardsOnStack) {
         if (nextPlayer.has4OnHand()) {
+            game.setFunctionalCards(game.getFunctionalCards() + functionalCardsOnStack);
             nextPlayer.setRequestedCardsInNextMove(CardHelper.ALL4.getCards());
+            log.info("ustawiono wymagane karty do następnego ruchu: {}", nextPlayer);
         } else {
+            //todo umozliwia wykonanie nastepnej kolejki - trzeba zastosować od razu
             nextPlayer.setMovementsBlocked(functionalCardsOnStack);
             log.info("Player: {} got penalty, waiting {} rounds", nextPlayer.getName(), functionalCardsOnStack);
         }
     }
 
-    private void checkIfAnyPlayerWonAndRestartGame(){
+    private void checkIfAnyPlayerWonAndRestartGame() {
         Player winnerCandidate = game.getWinner();
-        if(winnerCandidate != null){
-            winnerCandidate.setState(Player.State.FINISHED);
+        if (winnerCandidate != null) {
             game.setGameStateFinishedAndClearTable();
+            winnerCandidate.setState(Player.State.FINISHED);
         }
+    }
+
+    private void clearPlayerAfterMove(final Player player) {
+        player.setState(Player.State.WAITING);
+        player.setRequestedCardsInNextMove(new ArrayList<>());
     }
 }

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import pl.arturzaczek.makaoweb.game.cards.Diamond;
 import pl.arturzaczek.makaoweb.game.cards.Heart;
 import pl.arturzaczek.makaoweb.game.cards.Spade;
-import pl.arturzaczek.makaoweb.game.exception.GameException;
+import pl.arturzaczek.makaoweb.rest.exception.GameException;
 import pl.arturzaczek.makaoweb.game.player.Player;
 import pl.arturzaczek.makaoweb.utils.CardHelper;
 import pl.arturzaczek.makaoweb.utils.CardValues;
@@ -21,6 +21,7 @@ class GameTest {
         final GameException exception = Assertions.assertThrows(GameException.class, () -> game.playerJoin(new Player()));
         Assertions.assertEquals(3, game.getPlayerList().size());
         Assertions.assertEquals("incorrect game state or too much players", exception.getMessage());
+        Assertions.assertEquals("400 BAD_REQUEST", exception.getCode());
     }
 
     @Test
@@ -100,33 +101,6 @@ class GameTest {
     }
 
     @Test
-    public void shouldReturnPrevPlayerByUuid() {
-        final Game game = mockGame(Game.GameState.PLAYING);
-        final Player player = game.getPrevPlayerByCurrentUuid("test3");
-        final Player expected = Player.builder()
-                .name("player2")
-                .uuid("test2")
-                .state(Player.State.WAITING)
-                .onHand(List.of(new Diamond(CardValues._10.getValue()), new Spade(CardValues._6.getValue()), new Spade(CardValues._7.getValue()), new Spade(CardValues._9.getValue())))
-                .build();
-        Assertions.assertEquals(expected, player);
-    }
-
-    @Test
-    public void shouldReturnPrevPlayerByUuid2() {
-        final Game game = mockGame(Game.GameState.PLAYING);
-        final Player player = game.getPrevPlayerByCurrentUuid("test1");
-        final Player expected = Player.builder()
-                .name("player3")
-                .uuid("test3")
-                .state(Player.State.ACTIVE)
-                .onHand(List.of(new Heart(CardValues._10.getValue()), new Spade(CardValues._10.getValue()), new Spade(CardValues._5.getValue()), new Heart(CardValues._9.getValue())))
-                .build();
-
-        Assertions.assertEquals(expected, player);
-    }
-
-    @Test
     public void shouldStartGame() {
         final Game game = mockGame(Game.GameState.OPEN);
         Assertions.assertDoesNotThrow(game::startGame);
@@ -141,6 +115,35 @@ class GameTest {
     }
 
     @Test
+    public void shouldThrowGameExceptionWhenTooMuchPlayersOnStartGame() {
+        Game game = new Game();
+        game.setPlayerList(new ArrayList<>(List.of(Player.builder().build(), Player.builder().build(), Player.builder().build(), Player.builder().build())));
+        game.setGameState(Game.GameState.OPEN);
+        final GameException exception = Assertions.assertThrows(GameException.class, game::startGame);
+        Assertions.assertEquals("Wrong number of players", exception.getMessage());
+    }
+
+    @Test
+    public void shouldThrowGameExceptionWhenTooLittlePlayersOnStartGame() {
+        Game game = new Game();
+        game.setPlayerList(new ArrayList<>(List.of(Player.builder().build())));
+        game.setGameState(Game.GameState.OPEN);
+        final GameException exception = Assertions.assertThrows(GameException.class, game::startGame);
+        Assertions.assertEquals("Wrong number of players", exception.getMessage());
+        Assertions.assertEquals("400 BAD_REQUEST", exception.getCode());
+    }
+
+    @Test
+    public void shouldThrowGameExceptionWhenGameHasIncorrectStateOnStartGame() {
+        Game game = new Game();
+        game.setPlayerList(new ArrayList<>(List.of(Player.builder().build(), Player.builder().build(), Player.builder().build())));
+        game.setGameState(Game.GameState.PLAYING);
+        final GameException exception = Assertions.assertThrows(GameException.class, game::startGame);
+        Assertions.assertEquals("Incorrect game state", exception.getMessage());
+        Assertions.assertEquals("400 BAD_REQUEST", exception.getCode());
+    }
+
+    @Test
     public void shouldStartGameAndDealCardsBetweenPlayers() {
         final Game game = mockGame(Game.GameState.OPEN);
         Assertions.assertDoesNotThrow(game::startGame);
@@ -151,29 +154,6 @@ class GameTest {
         Assertions.assertEquals(5, player2.getOnHand().size());
         Assertions.assertEquals(5, player3.getOnHand().size());
         Assertions.assertEquals(Game.GameState.PLAYING, game.getGameState());
-    }
-
-    @Test
-    public void shouldToggleNextPlayerActive() {
-        final Game game = mockGame(Game.GameState.OPEN);
-        final Player player1 = game.getPlayerByUuid("test1");
-        Assertions.assertDoesNotThrow(
-                ()-> game.toggleNextPlayerActive(player1));
-        final Player player2 = game.getPlayerByUuid("test2");
-        Assertions.assertEquals(Player.State.ACTIVE, player2.getState());
-        Assertions.assertEquals(Player.State.WAITING, player1.getState());
-    }
-
-
-    @Test
-    public void shouldToggleNextPlayerActive2() {
-        final Game game = mockGame(Game.GameState.OPEN);
-        final Player player1 = game.getPlayerByUuid("test3");
-        Assertions.assertDoesNotThrow(
-                ()-> game.toggleNextPlayerActive(player1));
-        final Player player2 = game.getPlayerByUuid("test1");
-        Assertions.assertEquals(Player.State.ACTIVE, player2.getState());
-        Assertions.assertEquals(Player.State.WAITING, player1.getState());
     }
 
     @Test
@@ -200,12 +180,12 @@ class GameTest {
 
 
         final Player actual = Assertions.assertDoesNotThrow(
-                () -> game.getNextWaitingPlayerByCurrentUuid("test1"));
+                () -> game.getNextWaitingPlayerAndSetActiveByCurrentUuid("test1"));
         final Player expected = game.getPlayerByUuid("test3");
         Assertions.assertEquals(expected, actual);
         Assertions.assertEquals(1, player2.getMovementsBlocked());
         Assertions.assertEquals(Player.State.BLOCKED, player2.getState());
-        Assertions.assertEquals(Player.State.WAITING, actual.getState());
+        Assertions.assertEquals(Player.State.ACTIVE, actual.getState());
     }
 
     @Test
@@ -233,12 +213,12 @@ class GameTest {
 
 
         final Player actual = Assertions.assertDoesNotThrow(
-                () -> game.getNextWaitingPlayerByCurrentUuid("test2"));
+                () -> game.getNextWaitingPlayerAndSetActiveByCurrentUuid("test2"));
         final Player expected = game.getPlayerByUuid("test1");
         Assertions.assertEquals(expected, actual);
         Assertions.assertEquals(0, player3.getMovementsBlocked());
         Assertions.assertEquals(Player.State.WAITING, player3.getState());
-        Assertions.assertEquals(Player.State.WAITING, actual.getState());
+        Assertions.assertEquals(Player.State.ACTIVE, actual.getState());
     }
 
     public Game mockGame(final Game.GameState state) {
@@ -268,5 +248,4 @@ class GameTest {
         game.setGameState(state);
         return game;
     }
-
 }
