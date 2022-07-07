@@ -22,12 +22,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = GameException.class)
     protected ResponseEntity<ApiErrorResponse> handleGameException(BaseGameException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(createErrorMessage(ex));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(createErrorMessage(ex));
     }
 
     @ExceptionHandler(value = PlayerException.class)
     protected ResponseEntity<ApiErrorResponse> handlePlayerException(BaseGameException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(createErrorMessage(ex));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(createErrorMessage(ex));
     }
 
     private ApiErrorResponse createErrorMessage(BaseGameException ex) {

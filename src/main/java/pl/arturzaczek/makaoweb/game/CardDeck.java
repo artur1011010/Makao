@@ -74,5 +74,4 @@ public class CardDeck {
     public void putFirstCardAway() {
         lastOnStack = deck.remove(0);
     }
-
 }

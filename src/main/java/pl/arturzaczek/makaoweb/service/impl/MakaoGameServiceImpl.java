@@ -74,7 +74,8 @@ public class MakaoGameServiceImpl implements MakaoGameService {
     public GameStateDto getGameStateDto() {
         return GameStateDto.builder()
                 .gameState(game.getGameState() == null ? "null state" : game.getGameState().name())
-                .playerList(game.getPlayerList().stream().map(player -> PlayerDto.builder()
+                .playerList(game.getPlayerList().stream()
+                        .map(player -> PlayerDto.builder()
                         .state(player.getState())
                         .movementsBlocked(player.getMovementsBlocked())
                         .onHand(player.getOnHand()
@@ -148,7 +149,6 @@ public class MakaoGameServiceImpl implements MakaoGameService {
             game.setFunctionalCards(game.getFunctionalCards() + functionalCardsOnStack);
             nextPlayer.setRequestedCardsInNextMove(CardHelper.ALL4.getCards());
         } else {
-            //todo umozliwia wykonanie nastepnej kolejki - trzeba zastosować od razu
             nextPlayer.setMovementsBlocked(functionalCardsOnStack + game.getFunctionalCards());
             nextPlayer.setState(Player.State.BLOCKED);
             game.getNextWaitingPlayerAndSetActiveByCurrentUuid(nextPlayer.getUuid());

@@ -55,15 +55,6 @@ public class Player {
         }
     }
 
-    public void setBlockMovements(final int rounds) {
-        if (movementsBlocked != 0 || state == State.BLOCKED) {
-            log.error("gracz jest zablokowany, nie moza go blokowac skoro nie uczestniczy w grze");
-        } else {
-            movementsBlocked = rounds;
-            state = State.BLOCKED;
-        }
-    }
-
     public boolean has2OnHand() {
         return onHand.stream()
                 .anyMatch(card -> card.getValue().equals(BaseCard.VALUE_2));

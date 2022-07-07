@@ -187,7 +187,6 @@ const getPlayerState = () => {
         .then(data => {
             playerState = new PlayerState(data)
             console.log('playerState:' + JSON.stringify(playerState, null, 4))
-            // renderCardsOnHand();
             renderCardsOnHandAndCheckDisabled();
         })
         .catch(error => {
@@ -296,10 +295,8 @@ const move = () => {
 
     postData('/api/game/move')
         .then(() => {
-            // console.log('user made move')
             updateGameState();
             getPlayerState();
-            // renderCardsOnHand();
             renderCardsOnHandAndCheckDisabled();
             renderPutAside();
         })
@@ -314,12 +311,12 @@ const updateGameState = () => {
     stateText.innerHTML = gameState.renderGameState()
     if (gameState.gameState === "PLAYING") {
         populateLastCardOnStack(gameState.lastOnStack);
-    }else {
+    } else {
         hideLastCardOnDeck();
     }
 }
 
-const hideLastCardOnDeck = () =>{
+const hideLastCardOnDeck = () => {
     const domObj = document.getElementById("last-on-stack")
     domObj.innerHTML = '';
 }
@@ -344,7 +341,7 @@ const renderCardsOnHand = () => {
 
 const renderCardsOnHandAndCheckDisabled = () => {
     const onHand1 = document.getElementById("on-hand")
-    onHand1.innerHTML = "";
+    onHand1.innerHTML = '';
     let result = '';
     const requestedCards = playerState.requestedCardsInNextMove;
     if (requestedCards === undefined || requestedCards === null || requestedCards.length === 0) {
@@ -485,20 +482,3 @@ setInterval('refreshGame()', 1000)
 function refreshGame() {
     getGameState();
 }
-
-//tests
-
-playerState.requestedCardsInNextMove = [new Card("Club", "2"), new Card("Heart", "2")]
-
-function test() {
-    const card = new Card("Club", "2");
-    console.log(card.isRequested());
-    const card1 = new Card("Heart", "2");
-    console.log(card1.isRequested());
-    const card2 = new Card("Heart", "4");
-    console.log(card2.isRequested());
-    const card3 = new Card("Diamond", "2");
-    console.log(card3.isRequested());
-}
-
-test();
