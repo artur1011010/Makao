@@ -9,9 +9,13 @@ Browser card game, based on REST
 * [Bootstrap 4](https://getbootstrap.com/)
 * JavaScript
 
+## Demo
+
+https://makao-jzo.herokuapp.com/
+
 ## PL - doc
 
-(Google drive)(https://drive.google.com/file/d/1wanPt1eFA_5zS6B3Z25t98Hg2PaxWkn0/view?usp=sharing])
+https://drive.google.com/file/d/1wanPt1eFA_5zS6B3Z25t98Hg2PaxWkn0/view?usp=sharing]
 
 ## screenshots
 
